@@ -2,6 +2,7 @@ package com.gmail.trentech.MoneyDrop.utils;
 
 import java.util.Optional;
 
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.manipulator.mutable.entity.SkeletonData;
 import org.spongepowered.api.data.manipulator.mutable.entity.VillagerZombieData;
 import org.spongepowered.api.data.type.Career;
@@ -15,10 +16,10 @@ import org.spongepowered.api.entity.living.monster.Zombie;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.MobDropData;
 import com.gmail.trentech.MoneyDrop.MoneyDrop;
-import com.gmail.trentech.MoneyDrop.PlayerDropData;
-import com.gmail.trentech.MoneyDrop.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.dropdata.MobDropData;
+import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData;
+import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 
@@ -139,10 +140,6 @@ public class Settings {
 		return configManager.getConfig().getNode("1:settings", "mobs-only-drop-on-kill").getBoolean();
 	}
 
-	public boolean isIndependentDrops() {
-		return configManager.getConfig().getNode("1:settings", "independent-drops").getBoolean();
-	}
-	
 	public double getMaxStackValue() {
 		return configManager.getConfig().getNode("1:settings", "max-stack-value").getDouble();
 	}
@@ -150,7 +147,7 @@ public class Settings {
 	public ItemType getItemType() {
 		String itemType = configManager.getConfig().getNode("1:settings", "dropped-item-id").getString();
 
-		Optional<ItemType> optionalType = MoneyDrop.getGame().getRegistry().getType(ItemType.class, itemType);
+		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
 
 		if (!optionalType.isPresent()) {
 			MoneyDrop.getLog().error(itemType + " is an not valid");
@@ -184,6 +181,10 @@ public class Settings {
 		return configManager.getConfig().getNode("1:settings", "allow-creative-mode").getBoolean();
 	}
 
+	public boolean isHopperAllowed() {
+		return !configManager.getConfig().getNode("1:settings", "hoppers-destroy-money").getBoolean();
+	}
+	
 	public boolean isUsePermissions() {
 		return configManager.getConfig().getNode("1:settings", "use-permissions").getBoolean();
 	}

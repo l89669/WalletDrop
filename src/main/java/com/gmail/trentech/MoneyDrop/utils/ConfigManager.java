@@ -3,6 +3,7 @@ package com.gmail.trentech.MoneyDrop.utils;
 import java.io.File;
 import java.io.IOException;
 
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.type.Profession;
 import org.spongepowered.api.data.type.SkeletonType;
 import org.spongepowered.api.entity.EntityType;
@@ -12,7 +13,7 @@ import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.MoneyDrop.MoneyDrop;
-import com.gmail.trentech.MoneyDrop.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -93,14 +94,14 @@ public class ConfigManager {
 			if (config.getNode("1:settings", "dropped-item-unsafe-damage").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-unsafe-damage").setValue(0).setComment("Unsafe damage value of ItemStack for items such as colored wool, wooden plank varients etc.");
 			}
-			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
-				config.getNode("1:settings", "independent-drops").setValue(true).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
-			}
 			if (config.getNode("1:settings", "max-stack-value").isVirtual()) {
-				config.getNode("1:settings", "max-stack-value").setValue(5).setComment("Set max value for each ItemStack");
+				config.getNode("1:settings", "max-stack-value").setValue(5).setComment("Split money into multiple ItemStacks base on the max value a ItemStack can have. Set this to 0 to drop 1 ItemStack per kill");
 			}
 			if (config.getNode("1:settings", "precision").isVirtual()) {
 				config.getNode("1:settings", "precision").setValue(0.01).setComment("The precision of the dropped money. If mob has a minimum of 1 and a maximum of 3, with precision of 1, mob can drop 1, 2, or 3, with precision of 0.5, mob can drop 1, 1.5, 2, 2.5, or 3");
+			}
+			if (config.getNode("1:settings", "hoppers-destroy-money").isVirtual()) {
+				config.getNode("1:settings", "hoppers-destroy-money").setValue(false).setComment("!!!NOT IMPLEMENTED YET!!!");
 			}
 			if (config.getNode("1:settings", "pickup-chat-notification-enabled").isVirtual()) {
 				config.getNode("1:settings", "pickup-chat-notification-enabled").setValue(true).setComment("Send player message when picking up money");
@@ -121,13 +122,13 @@ public class ConfigManager {
 				}
 			}
 
-			for (EntityType entityType : MoneyDrop.getGame().getRegistry().getAllOf(EntityType.class)) {
+			for (EntityType entityType : Sponge.getRegistry().getAllOf(EntityType.class)) {
 				if (Living.class.isAssignableFrom(entityType.getEntityClass()) && !(entityType.equals(EntityTypes.ARMOR_STAND) || entityType.equals(EntityTypes.HUMAN))) {
 					switch (entityType.getId()) {
 					case "minecraft:skeleton":
 						String skeleton = entityType.getId();
 
-						for (SkeletonType type : MoneyDrop.getGame().getRegistry().getAllOf(SkeletonType.class)) {
+						for (SkeletonType type : Sponge.getRegistry().getAllOf(SkeletonType.class)) {
 							initMobData(skeleton + "-" + type.getId().toLowerCase());
 						}
 						break;
@@ -145,7 +146,7 @@ public class ConfigManager {
 						String villager = entityType.getId();
 						initMobData(villager);
 
-						for (Profession type : MoneyDrop.getGame().getRegistry().getAllOf(Profession.class)) {
+						for (Profession type : Sponge.getRegistry().getAllOf(Profession.class)) {
 							initMobData(villager + "-" + type.getId());
 						}
 						break;
@@ -189,14 +190,14 @@ public class ConfigManager {
 			if (config.getNode("1:settings", "dropped-item-unsafe-damage").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-unsafe-damage").setValue(global.getNode("1:settings", "dropped-item-unsafe-damage").getInt()).setComment("Unsafe damage value of ItemStack for items such as colored wool, wooden plank varients etc.");
 			}
-			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
-				config.getNode("1:settings", "independent-drops").setValue(global.getNode("1:settings", "independent-drops").getBoolean()).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
-			}
 			if (config.getNode("1:settings", "max-stack-value").isVirtual()) {
-				config.getNode("1:settings", "max-stack-value").setValue(global.getNode("1:settings", "max-stack-value").getDouble()).setComment("Set max value for each ItemStack");
+				config.getNode("1:settings", "max-stack-value").setValue(global.getNode("1:settings", "max-stack-value").getDouble()).setComment("Split money into multiple ItemStacks base on the max value a ItemStack can have. Set this to 0 to drop 1 ItemStack per kill");
 			}
 			if (config.getNode("1:settings", "precision").isVirtual()) {
 				config.getNode("1:settings", "precision").setValue(global.getNode("1:settings", "precision").getDouble()).setComment("The precision of the dropped money. 0.0 to 1.0. If mob has a minimum of 1 and a maximum of 3, with precision of 1, mob can drop 1, 2, or 3, with precision of 0.5, mob can drop 1, 1.5, 2, 2.5, or 3");
+			}
+			if (config.getNode("1:settings", "hoppers-destroy-money").isVirtual()) {
+				config.getNode("1:settings", "hoppers-destroy-money").setValue(global.getNode("1:settings", "hoppers-destroy-money").getBoolean()).setComment("!!!NOT IMPLEMENTED YET!!!");
 			}
 			if (config.getNode("1:settings", "pickup-chat-notification-enabled").isVirtual()) {
 				config.getNode("1:settings", "pickup-chat-notification-enabled").setValue(global.getNode("1:settings", "pickup-chat-notification-enabled").getBoolean()).setComment("Send player message when picking up money");
@@ -218,13 +219,13 @@ public class ConfigManager {
 				}
 			}
 
-			for (EntityType entityType : MoneyDrop.getGame().getRegistry().getAllOf(EntityType.class)) {
+			for (EntityType entityType : Sponge.getRegistry().getAllOf(EntityType.class)) {
 				if (Living.class.isAssignableFrom(entityType.getEntityClass()) && !(entityType.equals(EntityTypes.ARMOR_STAND) || entityType.equals(EntityTypes.HUMAN))) {
 					switch (entityType.getId()) {
 					case "minecraft:skeleton":
 						String skeleton = entityType.getId();
 
-						for (SkeletonType type : MoneyDrop.getGame().getRegistry().getAllOf(SkeletonType.class)) {
+						for (SkeletonType type : Sponge.getRegistry().getAllOf(SkeletonType.class)) {
 							initMobData(global, skeleton + "-" + type.getId().toLowerCase());
 						}
 						break;
@@ -242,7 +243,7 @@ public class ConfigManager {
 						String villager = entityType.getId();
 						initMobData(global, villager);
 
-						for (Profession type : MoneyDrop.getGame().getRegistry().getAllOf(Profession.class)) {
+						for (Profession type : Sponge.getRegistry().getAllOf(Profession.class)) {
 							initMobData(global, villager + "-" + type.getId());
 						}
 						break;

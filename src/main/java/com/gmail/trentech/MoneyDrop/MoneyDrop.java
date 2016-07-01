@@ -1,15 +1,19 @@
 package com.gmail.trentech.MoneyDrop;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -29,7 +33,6 @@ import me.flibio.updatifier.Updatifier;
 @Plugin(id = Resource.ID, name = Resource.NAME, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
 public class MoneyDrop {
 
-	private static Game game;
 	private static Logger log;
 	private static PluginContainer plugin;
 
@@ -37,14 +40,13 @@ public class MoneyDrop {
 
 	@Listener
 	public void onPreInitializationEvent(GamePreInitializationEvent event) {
-		game = Sponge.getGame();
-		plugin = getGame().getPluginManager().getPlugin(Resource.ID).get();
+		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
 		log = getPlugin().getLogger();
 	}
 
 	@Listener
 	public void onInitializationEvent(GameInitializationEvent event) {
-		getGame().getDataManager().register(MoneyData.class, ImmutableMoneyData.class, new MoneyDataManipulatorBuilder());
+		Sponge.getDataManager().register(MoneyData.class, ImmutableMoneyData.class, new MoneyDataManipulatorBuilder());
 	}
 
 	@Listener
@@ -56,20 +58,20 @@ public class MoneyDrop {
 
 		ConfigManager.get().init();
 
-		getGame().getEventManager().registerListeners(this, new EventListener());
+		Sponge.getEventManager().registerListeners(this, new EventListener());
 	}
 
 	@Listener
 	public void onReloadEvent(GameReloadEvent event) {
 		ConfigManager.get().init();
 
-		for (World world : getGame().getServer().getWorlds()) {
+		for (World world : Sponge.getServer().getWorlds()) {
 			Settings.initSettings(world);
 		}
 	}
 
 	private boolean setupEconomy() {
-		Optional<EconomyService> optionalEconomy = getGame().getServiceManager().provide(EconomyService.class);
+		Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
 
 		if (optionalEconomy.isPresent()) {
 			economy = optionalEconomy.get();
@@ -78,12 +80,8 @@ public class MoneyDrop {
 		return optionalEconomy.isPresent();
 	}
 
-	public static EconomyService getEconomy() {
+	static EconomyService getEconomy() {
 		return economy;
-	}
-
-	public static Game getGame() {
-		return game;
 	}
 
 	public static Logger getLog() {
@@ -92,5 +90,50 @@ public class MoneyDrop {
 
 	public static PluginContainer getPlugin() {
 		return plugin;
+	}
+	
+	public static List<MoneyStack> createMoneyStacks(Settings settings, double amount) {
+		List<MoneyStack> moneyStacks = new ArrayList<>();
+
+		double split = settings.getMaxStackValue();
+
+		ItemStack itemStack = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
+		
+		int unsafeDamage = settings.getItemUnsafeDamage();
+		
+		if(unsafeDamage > 0) {
+			DataContainer container = itemStack.toContainer();
+			DataQuery query = DataQuery.of('/', "UnsafeDamage");
+			container.set(query, unsafeDamage);
+			
+			itemStack = ItemStack.builder().fromContainer(container).build();
+		}
+
+		if (split != 0) {
+			while (amount > 0) {
+				if (amount > split) {
+					moneyStacks.add(new MoneyStack(itemStack, split));
+					amount -= split;
+				} else {
+					moneyStacks.add(new MoneyStack(itemStack, amount));
+					amount = 0;
+				}
+			}
+		} else {
+			moneyStacks.add(new MoneyStack(itemStack, amount));
+		}
+
+		return moneyStacks;
+	}
+
+	public static double getItemStackValue(ItemStack itemStack) {
+		Optional<MoneyData> optionalData = itemStack.get(MoneyData.class);
+
+		if (optionalData.isPresent()) {
+			MoneyData moneyData = optionalData.get();
+
+			return moneyData.amount().get();
+		}
+		return 0;
 	}
 }

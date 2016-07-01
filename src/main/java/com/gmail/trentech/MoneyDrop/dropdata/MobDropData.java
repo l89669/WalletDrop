@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop;
+package com.gmail.trentech.MoneyDrop.dropdata;
 
 public class MobDropData {
 

@@ -2,6 +2,7 @@ package com.gmail.trentech.MoneyDrop;
 
 import java.util.Optional;
 
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
@@ -28,7 +29,7 @@ public class MoneyStack {
 	}
 
 	public void drop(Location<World> location) {
-		MoneyDataManipulatorBuilder builder = (MoneyDataManipulatorBuilder) MoneyDrop.getGame().getDataManager().getManipulatorBuilder(MoneyData.class).get();
+		MoneyDataManipulatorBuilder builder = (MoneyDataManipulatorBuilder) Sponge.getDataManager().getManipulatorBuilder(MoneyData.class).get();
 		MoneyData data = builder.createFrom(value);
 
 		ItemStack money = item.copy();
