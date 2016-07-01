@@ -29,11 +29,11 @@ public class MoneyStack {
 
 	public void drop(Location<World> location) {
 		MoneyDataManipulatorBuilder builder = (MoneyDataManipulatorBuilder) MoneyDrop.getGame().getDataManager().getManipulatorBuilder(MoneyData.class).get();
-        MoneyData data = builder.createFrom(value);
+		MoneyData data = builder.createFrom(value);
 
 		ItemStack money = item.copy();
 		money.offer(data);
-		
+
 		Optional<Entity> itemEntity = location.getExtent().createEntity(EntityTypes.ITEM, location.getPosition());
 
 		if (itemEntity.isPresent()) {

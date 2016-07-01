@@ -5,7 +5,7 @@ public class PlayerDropData {
 	private double[] amount = new double[10];
 	private boolean[] percent = new boolean[10];
 	private double precision;
-	
+
 	public PlayerDropData(double precision) {
 		this.precision = precision;
 	}
@@ -43,12 +43,12 @@ public class PlayerDropData {
 		int index = reason.getIndex();
 		String amnt = amount;
 		boolean pct = false;
-		
+
 		if (amount.charAt(amount.length() - 1) == '%') {
 			pct = true;
 			amnt = amount.substring(0, amount.length() - 1);
 		}
-		
+
 		try {
 			double parsed = Double.parseDouble(amnt);
 			if (pct) {
@@ -59,10 +59,10 @@ public class PlayerDropData {
 					parsed = 100;
 				}
 			}
-			
+
 			this.amount[index] = parsed;
 			this.percent[index] = pct;
-			
+
 			return true;
 		} catch (NumberFormatException e) {
 			return false;

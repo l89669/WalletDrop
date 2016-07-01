@@ -58,29 +58,29 @@ public class EventListener {
 		if (event.getTargetEntity() instanceof Item) {
 			Item item = (Item) event.getTargetEntity();
 			Settings settings = Settings.get(item.getWorld());
-			
-			if(!settings.getItemType().equals(item.getItemType())) {
+
+			if (!settings.getItemType().equals(item.getItemType())) {
 				return;
 			}
 
 			ItemStack itemStack = item.item().get().createStack();
-			
+
 			double amount = getMoney(item.item().get().createStack());
 
 			if (amount == 0) {
 				return;
 			}
-			
+
 			if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
-				return;				
+				return;
 			}
-			
+
 			if (settings.isUsePermissions()) {
 				if (!player.hasPermission("moneydrop.enable")) {
 					return;
 				}
 			}
-			
+
 			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 			if (!MoneyDrop.getGame().getEventManager().post(mpEvent)) {
@@ -93,7 +93,7 @@ public class EventListener {
 		}
 	}
 
-	//@Listener
+	// @Listener
 	public void onChangeInventoryEventPickup(ChangeInventoryEvent.Pickup event, @First Player player) {
 		for (Transaction<ItemStackSnapshot> snapshot : event.getTransactions()) {
 			ItemStack itemStack = snapshot.getOriginal().createStack();
@@ -105,18 +105,18 @@ public class EventListener {
 			}
 
 			Settings settings = Settings.get(player.getWorld());
-			
+
 			if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
 				event.setCancelled(true);
-				return;				
+				return;
 			}
-			
+
 			if (settings.isUsePermissions()) {
 				if (!player.hasPermission("moneydrop.enable")) {
 					return;
 				}
 			}
-			
+
 			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 			if (!MoneyDrop.getGame().getEventManager().post(mpEvent)) {
@@ -135,18 +135,18 @@ public class EventListener {
 			return;
 		}
 		Living entity = event.getTargetEntity();
-		
+
 		if (entity.getType().equals(EntityTypes.ARMOR_STAND) || entity.getType().equals(EntityTypes.HUMAN)) {
 			return;
 		}
-		
+
 		Settings settings = Settings.get(entity.getWorld());
 
 		if (settings.isKillOnlyDrops()) {
 			Player player;
 			if (src.getSource() instanceof Player) {
-				 player = (Player) src.getSource();
-			}else if (src.getSource() instanceof Projectile) {
+				player = (Player) src.getSource();
+			} else if (src.getSource() instanceof Projectile) {
 				Projectile projectile = (Projectile) src.getSource();
 
 				Optional<UUID> optionalUUID = projectile.getCreator();
@@ -158,10 +158,10 @@ public class EventListener {
 				Optional<Player> optionalPlayer = Sponge.getServer().getPlayer(optionalUUID.get());
 
 				if (!optionalPlayer.isPresent()) {
-					return;	
+					return;
 				}
 				player = optionalPlayer.get();
-				
+
 				if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
 					return;
 				}
@@ -171,7 +171,7 @@ public class EventListener {
 						return;
 					}
 				}
-			}else {
+			} else {
 				return;
 			}
 		}
@@ -198,7 +198,7 @@ public class EventListener {
 		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, getMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 		if (!MoneyDrop.getGame().getEventManager().post(moneyDropEvent)) {
-			for(MoneyStack moneyStack : moneyDropEvent.getMoneyStacks()) {
+			for (MoneyStack moneyStack : moneyDropEvent.getMoneyStacks()) {
 				moneyStack.drop(moneyDropEvent.getLocation());
 			}
 		}
@@ -235,9 +235,10 @@ public class EventListener {
 				Optional<Player> optionalPlayer = Sponge.getServer().getPlayer(optionalUUID.get());
 
 				if (optionalPlayer.isPresent()) {
-					reason = MDDeathReason.PLAYER_ATTACK;		
+					reason = MDDeathReason.PLAYER_ATTACK;
 				} else {
-					reason = MDDeathReason.MOB_ATTACK;;
+					reason = MDDeathReason.MOB_ATTACK;
+					;
 				}
 			} else {
 				DamageType cause = src.getType();
@@ -272,10 +273,10 @@ public class EventListener {
 		if (playerMoneyDropEvent.getPlayerLossAmount() != 0 && (!MoneyDrop.getGame().getEventManager().post(playerMoneyDropEvent))) {
 			giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getPlayerLossAmount()));
 
-			for(MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
+			for (MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
 				moneyStack.drop(playerMoneyDropEvent.getLocation());
 			}
-			
+
 			sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getPlayerLossAmount());
 		}
 	}
@@ -285,7 +286,7 @@ public class EventListener {
 		Settings settings = Settings.get(event.getTargetWorld());
 
 		int value = -1;
-		
+
 		if (!settings.isVanillaSpawnerAllowed() && cause.getType().equals(SpawnTypes.MOB_SPAWNER)) {
 			value = 0;
 		} else if (!settings.isModSpawnerAllowed() && cause.getType().equals(SpawnTypes.CUSTOM)) {
@@ -295,7 +296,7 @@ public class EventListener {
 		} else if (!settings.isEggSpawnerAllowed() && cause.getType().equals(SpawnTypes.SPAWN_EGG)) {
 			value = 0;
 		}
-		
+
 		for (Entity entity : event.getEntities()) {
 			MoneyDataManipulatorBuilder builder = (MoneyDataManipulatorBuilder) MoneyDrop.getGame().getDataManager().getManipulatorBuilder(MoneyData.class).get();
 			MoneyData moneyData = builder.createFrom(value);
@@ -305,28 +306,28 @@ public class EventListener {
 
 	private List<MoneyStack> getMoneyStacks(Settings settings, double amount) {
 		List<MoneyStack> moneyStacks = new ArrayList<>();
-		
-		double split = settings.getMaxStackValue();
-		
-		if(settings.isIndependentDrops()) {
-		    while (amount > 0) {
-		        ItemStack money = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
 
-		        if(amount > split) {
-			        moneyStacks.add(new MoneyStack(money, split));
-			       	amount -= split;
-		        }else {
-		        	moneyStacks.add(new MoneyStack(money, amount));
-			        amount = 0;
-		        }
-		    }
+		double split = settings.getMaxStackValue();
+
+		if (settings.isIndependentDrops()) {
+			while (amount > 0) {
+				ItemStack money = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
+
+				if (amount > split) {
+					moneyStacks.add(new MoneyStack(money, split));
+					amount -= split;
+				} else {
+					moneyStacks.add(new MoneyStack(money, amount));
+					amount = 0;
+				}
+			}
 		} else {
 			moneyStacks.add(new MoneyStack(ItemStack.builder().quantity(1).itemType(settings.getItemType()).build(), amount));
 		}
-  
+
 		return moneyStacks;
 	}
-	
+
 	private double getMoney(ItemStack itemStack) {
 		Optional<MoneyData> optionalData = itemStack.get(MoneyData.class);
 
@@ -378,9 +379,9 @@ public class EventListener {
 			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
 		}
 	}
-	
+
 	private void sendPickupChatMessage(Settings settings, Player player, double amount) {
-		if(settings.isPickupChatNotification()) {
+		if (settings.isPickupChatNotification()) {
 			String message = settings.getPickupChatMessage();
 			double money;
 			if (amount % 1 == 0) {
