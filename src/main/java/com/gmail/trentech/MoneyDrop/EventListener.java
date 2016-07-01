@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.data.DataContainer;
+import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
@@ -309,20 +311,30 @@ public class EventListener {
 
 		double split = settings.getMaxStackValue();
 
+		ItemStack itemStack = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
+		
+		int unsafeDamage = settings.getItemUnsafeDamage();
+		
+		if(unsafeDamage > 0) {
+			DataContainer container = itemStack.toContainer();
+			DataQuery query = DataQuery.of('/', "UnsafeDamage");
+			container.set(query, unsafeDamage);
+			
+			itemStack = ItemStack.builder().fromContainer(container).build();
+		}
+
 		if (settings.isIndependentDrops()) {
 			while (amount > 0) {
-				ItemStack money = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
-
 				if (amount > split) {
-					moneyStacks.add(new MoneyStack(money, split));
+					moneyStacks.add(new MoneyStack(itemStack, split));
 					amount -= split;
 				} else {
-					moneyStacks.add(new MoneyStack(money, amount));
+					moneyStacks.add(new MoneyStack(itemStack, amount));
 					amount = 0;
 				}
 			}
 		} else {
-			moneyStacks.add(new MoneyStack(ItemStack.builder().quantity(1).itemType(settings.getItemType()).build(), amount));
+			moneyStacks.add(new MoneyStack(itemStack, amount));
 		}
 
 		return moneyStacks;

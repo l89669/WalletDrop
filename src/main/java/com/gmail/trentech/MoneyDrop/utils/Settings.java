@@ -187,4 +187,8 @@ public class Settings {
 	public boolean isUsePermissions() {
 		return configManager.getConfig().getNode("1:settings", "use-permissions").getBoolean();
 	}
+
+	public int getItemUnsafeDamage() {
+		return configManager.getConfig().getNode("1:settings", "dropped-item-unsafe-damage").getInt();
+	}
 }

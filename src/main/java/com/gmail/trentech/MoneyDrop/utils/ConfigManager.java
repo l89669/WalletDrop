@@ -90,6 +90,9 @@ public class ConfigManager {
 			if (config.getNode("1:settings", "dropped-item-id").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-id").setValue(ItemTypes.GOLD_NUGGET.getId()).setComment("Item id or ItemStack used to represent money");
 			}
+			if (config.getNode("1:settings", "dropped-item-unsafe-damage").isVirtual()) {
+				config.getNode("1:settings", "dropped-item-unsafe-damage").setValue(0).setComment("Unsafe damage value of ItemStack for items such as colored wool, wooden plank varients etc.");
+			}
 			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
 				config.getNode("1:settings", "independent-drops").setValue(true).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
 			}
@@ -182,6 +185,9 @@ public class ConfigManager {
 			}
 			if (config.getNode("1:settings", "dropped-item-id").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-id").setValue(global.getNode("1:settings", "dropped-item-id").getString()).setComment("Item id or ItemStack used to represent money");
+			}
+			if (config.getNode("1:settings", "dropped-item-unsafe-damage").isVirtual()) {
+				config.getNode("1:settings", "dropped-item-unsafe-damage").setValue(global.getNode("1:settings", "dropped-item-unsafe-damage").getInt()).setComment("Unsafe damage value of ItemStack for items such as colored wool, wooden plank varients etc.");
 			}
 			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
 				config.getNode("1:settings", "independent-drops").setValue(global.getNode("1:settings", "independent-drops").getBoolean()).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
