@@ -90,6 +90,12 @@ public class ConfigManager {
 			if (config.getNode("1:settings", "dropped-item-id").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-id").setValue(ItemTypes.GOLD_NUGGET.getId()).setComment("Item id or ItemStack used to represent money");
 			}
+			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
+				config.getNode("1:settings", "independent-drops").setValue(true).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
+			}
+			if (config.getNode("1:settings", "max-stack-value").isVirtual()) {
+				config.getNode("1:settings", "max-stack-value").setValue(5).setComment("Set max value for each ItemStack");
+			}
 			if (config.getNode("1:settings", "precision").isVirtual()) {
 				config.getNode("1:settings", "precision").setValue(0.01).setComment("The precision of the dropped money. If mob has a minimum of 1 and a maximum of 3, with precision of 1, mob can drop 1, 2, or 3, with precision of 0.5, mob can drop 1, 1.5, 2, 2.5, or 3");
 			}
@@ -176,6 +182,12 @@ public class ConfigManager {
 			}
 			if (config.getNode("1:settings", "dropped-item-id").isVirtual()) {
 				config.getNode("1:settings", "dropped-item-id").setValue(global.getNode("1:settings", "dropped-item-id").getString()).setComment("Item id or ItemStack used to represent money");
+			}
+			if (config.getNode("1:settings", "independent-drops").isVirtual()) {
+				config.getNode("1:settings", "independent-drops").setValue(global.getNode("1:settings", "independent-drops").getBoolean()).setComment("If true, money spawns in multiple ItemStacks, If false one ItemStack per kill");
+			}
+			if (config.getNode("1:settings", "max-stack-value").isVirtual()) {
+				config.getNode("1:settings", "max-stack-value").setValue(global.getNode("1:settings", "max-stack-value").getDouble()).setComment("Set max value for each ItemStack");
 			}
 			if (config.getNode("1:settings", "precision").isVirtual()) {
 				config.getNode("1:settings", "precision").setValue(global.getNode("1:settings", "precision").getDouble()).setComment("The precision of the dropped money. 0.0 to 1.0. If mob has a minimum of 1 and a maximum of 3, with precision of 1, mob can drop 1, 2, or 3, with precision of 0.5, mob can drop 1, 1.5, 2, 2.5, or 3");

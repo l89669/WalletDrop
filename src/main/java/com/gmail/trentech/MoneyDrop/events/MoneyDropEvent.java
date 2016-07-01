@@ -1,5 +1,7 @@
 package com.gmail.trentech.MoneyDrop.events;
 
+import java.util.List;
+
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
@@ -14,34 +16,36 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 
 	protected Living entity;
 	protected Location<World> dropLocation;
-	protected MoneyStack moneyStack;
+	protected List<MoneyStack> moneyStacks;
 	protected DestructEntityEvent.Death sourceEvent;
 	protected boolean specialDrop;
+	protected Cause cause;
 	protected boolean cancelled = false;
 
-	public MoneyDropEvent(DestructEntityEvent.Death event, MoneyStack moneyStack, boolean specialDrop) {
+	public MoneyDropEvent(DestructEntityEvent.Death event, List<MoneyStack> moneyStacks, boolean specialDrop, Cause cause) {
 		if (event != null) {
 			entity = event.getTargetEntity();
 			dropLocation = entity.getLocation();
 		}
-		this.moneyStack = moneyStack;
+		this.moneyStacks = moneyStacks;
 		sourceEvent = event;
 		this.specialDrop = specialDrop;
+		this.cause = cause;
 	}
 
 	public DestructEntityEvent.Death getSourceEvent() {
 		return sourceEvent;
 	}
 
-	public MoneyStack getMoneyStack() {
-		return moneyStack;
+	public List<MoneyStack> getMoneyStacks() {
+		return moneyStacks;
 	}
 
 	public Living getEntity() {
 		return entity;
 	}
 
-	public Location<World> getDropLocation() {
+	public Location<World> getLocation() {
 		return dropLocation;
 	}
 
@@ -63,7 +67,7 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 
 	@Override
 	public Cause getCause() {
-		return null;
+		return cause;
 	}
 
 }

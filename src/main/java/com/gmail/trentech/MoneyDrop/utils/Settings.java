@@ -139,6 +139,14 @@ public class Settings {
 		return configManager.getConfig().getNode("1:settings", "mobs-only-drop-on-kill").getBoolean();
 	}
 
+	public boolean isIndependentDrops() {
+		return configManager.getConfig().getNode("1:settings", "independent-drops").getBoolean();
+	}
+	
+	public double getMaxStackValue() {
+		return configManager.getConfig().getNode("1:settings", "max-stack-value").getDouble();
+	}
+	
 	public ItemType getItemType() {
 		String itemType = configManager.getConfig().getNode("1:settings", "dropped-item-id").getString();
 

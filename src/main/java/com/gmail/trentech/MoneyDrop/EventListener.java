@@ -2,6 +2,8 @@ package com.gmail.trentech.MoneyDrop;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -63,7 +65,7 @@ public class EventListener {
 
 			ItemStack itemStack = item.item().get().createStack();
 			
-			double amount = itemToCash(item.item().get().createStack());
+			double amount = getMoney(item.item().get().createStack());
 
 			if (amount == 0) {
 				return;
@@ -79,7 +81,7 @@ public class EventListener {
 				}
 			}
 			
-			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount);
+			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 			if (!MoneyDrop.getGame().getEventManager().post(mpEvent)) {
 				player.getInventory().query(itemStack).clear();
@@ -96,7 +98,7 @@ public class EventListener {
 		for (Transaction<ItemStackSnapshot> snapshot : event.getTransactions()) {
 			ItemStack itemStack = snapshot.getOriginal().createStack();
 
-			double amount = itemToCash(itemStack);
+			double amount = getMoney(itemStack);
 
 			if (amount == 0) {
 				continue;
@@ -115,7 +117,7 @@ public class EventListener {
 				}
 			}
 			
-			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount);
+			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 			if (!MoneyDrop.getGame().getEventManager().post(mpEvent)) {
 				player.getInventory().query(itemStack).clear();
@@ -141,19 +143,36 @@ public class EventListener {
 		Settings settings = Settings.get(entity.getWorld());
 
 		if (settings.isKillOnlyDrops()) {
-			if (!(src.getSource() instanceof Player)) {
-				return;
-			}
-			Player player = (Player) src.getSource();
+			Player player;
+			if (src.getSource() instanceof Player) {
+				 player = (Player) src.getSource();
+			}else if (src.getSource() instanceof Projectile) {
+				Projectile projectile = (Projectile) src.getSource();
 
-			if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
-				return;
-			}
+				Optional<UUID> optionalUUID = projectile.getCreator();
 
-			if (settings.isUsePermissions()) {
-				if (!player.hasPermission("moneydrop.enable")) {
+				if (!optionalUUID.isPresent()) {
 					return;
 				}
+
+				Optional<Player> optionalPlayer = Sponge.getServer().getPlayer(optionalUUID.get());
+
+				if (!optionalPlayer.isPresent()) {
+					return;	
+				}
+				player = optionalPlayer.get();
+				
+				if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
+					return;
+				}
+
+				if (settings.isUsePermissions()) {
+					if (!player.hasPermission("moneydrop.enable")) {
+						return;
+					}
+				}
+			}else {
+				return;
 			}
 		}
 
@@ -176,12 +195,12 @@ public class EventListener {
 			basedrops = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
 		}
 
-		MoneyStack moneyStack = new MoneyStack(ItemStack.builder().itemType(settings.getItemType()).build(), basedrops);
-		
-		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, moneyStack, specialDrop);
+		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, getMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 		if (!MoneyDrop.getGame().getEventManager().post(moneyDropEvent)) {
-			moneyDropEvent.getMoneyStack().drop(moneyDropEvent.getDropLocation());
+			for(MoneyStack moneyStack : moneyDropEvent.getMoneyStacks()) {
+				moneyStack.drop(moneyDropEvent.getLocation());
+			}
 		}
 	}
 
@@ -248,16 +267,16 @@ public class EventListener {
 			dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 		}
 
-		MoneyStack moneyStack = new MoneyStack(ItemStack.builder().itemType(settings.getItemType()).build(), dropAmount);
+		PlayerMoneyDropEvent playerMoneyDropEvent = new PlayerMoneyDropEvent(event, getMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
-		PlayerMoneyDropEvent pmdEvent = new PlayerMoneyDropEvent(event, moneyStack, specialdrop);
+		if (playerMoneyDropEvent.getPlayerLossAmount() != 0 && (!MoneyDrop.getGame().getEventManager().post(playerMoneyDropEvent))) {
+			giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getPlayerLossAmount()));
 
-		if (pmdEvent.getPlayerLossAmount() != 0 && (!MoneyDrop.getGame().getEventManager().post(pmdEvent))) {
-			giveOrTakeMoney(player, new BigDecimal(-1 * pmdEvent.getPlayerLossAmount()));
-
-			pmdEvent.getMoneyStack().drop(pmdEvent.getDropLocation());
-
-			sendDeathChatMessage(Settings.get(player.getWorld()), player, pmdEvent.getPlayerLossAmount());
+			for(MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
+				moneyStack.drop(playerMoneyDropEvent.getLocation());
+			}
+			
+			sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getPlayerLossAmount());
 		}
 	}
 
@@ -284,7 +303,31 @@ public class EventListener {
 		}
 	}
 
-	private double itemToCash(ItemStack itemStack) {
+	private List<MoneyStack> getMoneyStacks(Settings settings, double amount) {
+		List<MoneyStack> moneyStacks = new ArrayList<>();
+		
+		double split = settings.getMaxStackValue();
+		
+		if(settings.isIndependentDrops()) {
+		    while (amount > 0) {
+		        ItemStack money = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
+
+		        if(amount > split) {
+			        moneyStacks.add(new MoneyStack(money, split));
+			       	amount -= split;
+		        }else {
+		        	moneyStacks.add(new MoneyStack(money, amount));
+			        amount = 0;
+		        }
+		    }
+		} else {
+			moneyStacks.add(new MoneyStack(ItemStack.builder().quantity(1).itemType(settings.getItemType()).build(), amount));
+		}
+  
+		return moneyStacks;
+	}
+	
+	private double getMoney(ItemStack itemStack) {
 		Optional<MoneyData> optionalData = itemStack.get(MoneyData.class);
 
 		if (optionalData.isPresent()) {

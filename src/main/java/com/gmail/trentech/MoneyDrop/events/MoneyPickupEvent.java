@@ -11,12 +11,14 @@ public class MoneyPickupEvent extends AbstractEvent implements Cancellable {
 	protected Player player;
 	protected ItemStack item;
 	protected double value;
+	protected Cause cause;
 	protected boolean cancelled = false;
 
-	public MoneyPickupEvent(Player player, ItemStack sourceItem, double value) {
+	public MoneyPickupEvent(Player player, ItemStack sourceItem, double value, Cause cause) {
 		this.player = player;
 		this.item = sourceItem;
 		this.value = value;
+		this.cause = cause;
 	}
 
 	public Player getPlayer() {
@@ -45,8 +47,7 @@ public class MoneyPickupEvent extends AbstractEvent implements Cancellable {
 
 	@Override
 	public Cause getCause() {
-		// TODO Auto-generated method stub
-		return null;
+		return cause;
 	}
 
 }
