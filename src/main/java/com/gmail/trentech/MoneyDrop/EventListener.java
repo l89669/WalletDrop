@@ -3,13 +3,14 @@ package com.gmail.trentech.MoneyDrop;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.gamemode.GameModes;
@@ -25,7 +26,6 @@ import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.event.filter.cause.First;
-import org.spongepowered.api.event.item.inventory.AffectItemStackEvent;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -44,7 +44,7 @@ import com.gmail.trentech.MoneyDrop.utils.Settings;
 
 public class EventListener {
 
-	private Random random = new Random();
+	private static ThreadLocalRandom random = ThreadLocalRandom.current();
 
 	@Listener
 	public void onWorldLoad(LoadWorldEvent event) {
@@ -52,17 +52,22 @@ public class EventListener {
 	}
 
 	@Listener
-	public void onAffectItemStackEvent(AffectItemStackEvent event, @First Player player) {
-		for (Transaction<ItemStackSnapshot> transaction : event.getTransactions()) {
-			ItemStack itemStack = transaction.getOriginal().createStack();
+	public void onDestructEntityEventItem(DestructEntityEvent event, @First Player player) {
+		if (event.getTargetEntity() instanceof Item) {
+			Item item = (Item) event.getTargetEntity();
+			Settings settings = Settings.get(item.getWorld());
+			
+			if(!settings.getItemType().equals(item.getItemType())) {
+				return;
+			}
 
-			double amount = itemToCash(itemStack);
+			ItemStack itemStack = item.item().get().createStack();
+			
+			double amount = itemToCash(item.item().get().createStack());
 
 			if (amount == 0) {
 				return;
 			}
-
-			Settings settings = Settings.get(player.getWorld());
 			
 			if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
 				return;				
@@ -86,7 +91,7 @@ public class EventListener {
 		}
 	}
 
-	@Listener
+	//@Listener
 	public void onChangeInventoryEventPickup(ChangeInventoryEvent.Pickup event, @First Player player) {
 		for (Transaction<ItemStackSnapshot> snapshot : event.getTransactions()) {
 			ItemStack itemStack = snapshot.getOriginal().createStack();

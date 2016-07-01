@@ -51,6 +51,7 @@ public class MoneyDrop {
 	public void onPostInitializationEvent(GamePostInitializationEvent event) {
 		if (!setupEconomy()) {
 			getLog().error("No economy plugin found. Disabling MoneyDrop...");
+			return;
 		}
 
 		ConfigManager.get().init();

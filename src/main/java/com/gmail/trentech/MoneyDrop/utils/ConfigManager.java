@@ -250,7 +250,7 @@ public class ConfigManager {
 			config.getNode("2:mobs", entity, "dropped-maximum").setValue(3.0).setComment("Maximum amount of money mob will drop");
 		}
 		if (config.getNode("2:mobs", entity, "dropped-frequency").isVirtual()) {
-			config.getNode("2:mobs", entity, "dropped-frequency").setValue(0.0).setComment("Percentage mob will drop money. 0.0 to 1.0");
+			config.getNode("2:mobs", entity, "dropped-frequency").setValue(1.0).setComment("Percentage mob will drop money. 0.0 to 1.0");
 		}
 	}
 
@@ -262,7 +262,7 @@ public class ConfigManager {
 			config.getNode("2:mobs", entity, "dropped-maximum").setValue(global.getNode("2:mobs", entity, "dropped-maximum").getDouble()).setComment("Maximum amount of money mob will drop");
 		}
 		if (config.getNode("2:mobs", entity, "dropped-frequency").isVirtual()) {
-			config.getNode("2:mobs", entity, "dropped-frequency").setValue(global.getNode("2:mobs", entity, "dropped-frequency").getFloat()).setComment("Percentage mob will drop money. 0.0 to 1.0");
+			config.getNode("2:mobs", entity, "dropped-frequency").setValue(global.getNode("2:mobs", entity, "dropped-frequency").getDouble()).setComment("Percentage mob will drop money. 0.0 to 1.0");
 		}
 	}
 
