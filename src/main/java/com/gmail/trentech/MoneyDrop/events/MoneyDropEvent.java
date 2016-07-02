@@ -10,7 +10,7 @@ import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.MoneyStack;
+import com.gmail.trentech.MoneyDrop.data.MoneyStack;
 
 public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 

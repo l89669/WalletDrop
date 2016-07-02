@@ -1,6 +1,6 @@
-package com.gmail.trentech.MoneyDrop.data;
+package com.gmail.trentech.MoneyDrop.core.data;
 
-import static com.gmail.trentech.MoneyDrop.data.Keys.AMOUNT;
+import static com.gmail.trentech.MoneyDrop.core.data.Keys.AMOUNT;
 
 import java.util.Optional;
 

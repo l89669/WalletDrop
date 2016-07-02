@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.utils;
+package com.gmail.trentech.MoneyDrop.core.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.MoneyDrop;
-import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.core.Main;
+import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -294,10 +294,10 @@ public class ConfigManager {
 	private void create() {
 		if (!file.exists()) {
 			try {
-				MoneyDrop.getLog().info("Creating new " + file.getName() + " file...");
+				Main.getLog().info("Creating new " + file.getName() + " file...");
 				file.createNewFile();
 			} catch (IOException e) {
-				MoneyDrop.getLog().error("Failed to create new config file");
+				Main.getLog().error("Failed to create new config file");
 				e.printStackTrace();
 			}
 		}
@@ -308,7 +308,7 @@ public class ConfigManager {
 		try {
 			config = loader.load();
 		} catch (IOException e) {
-			MoneyDrop.getLog().error("Failed to load config");
+			Main.getLog().error("Failed to load config");
 			e.printStackTrace();
 		}
 	}
@@ -317,7 +317,7 @@ public class ConfigManager {
 		try {
 			loader.save(config);
 		} catch (IOException e) {
-			MoneyDrop.getLog().error("Failed to save config");
+			Main.getLog().error("Failed to save config");
 			e.printStackTrace();
 		}
 	}

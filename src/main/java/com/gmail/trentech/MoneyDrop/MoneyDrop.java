@@ -1,97 +1,27 @@
 package com.gmail.trentech.MoneyDrop;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataQuery;
-import org.spongepowered.api.event.Listener;
-import org.spongepowered.api.event.game.GameReloadEvent;
-import org.spongepowered.api.event.game.state.GameInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
-import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.plugin.Dependency;
-import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.economy.EconomyService;
-import org.spongepowered.api.world.World;
+import org.spongepowered.api.service.economy.account.UniqueAccount;
+import org.spongepowered.api.text.serializer.TextSerializers;
 
-import com.gmail.trentech.MoneyDrop.data.ImmutableMoneyData;
-import com.gmail.trentech.MoneyDrop.data.MoneyData;
-import com.gmail.trentech.MoneyDrop.data.MoneyDataManipulatorBuilder;
-import com.gmail.trentech.MoneyDrop.utils.ConfigManager;
-import com.gmail.trentech.MoneyDrop.utils.Resource;
-import com.gmail.trentech.MoneyDrop.utils.Settings;
+import com.gmail.trentech.MoneyDrop.core.Main;
+import com.gmail.trentech.MoneyDrop.core.data.MoneyData;
+import com.gmail.trentech.MoneyDrop.core.utils.Settings;
+import com.gmail.trentech.MoneyDrop.data.MoneyStack;
 
-import me.flibio.updatifier.Updatifier;
-
-@Updatifier(repoName = "MoneyDrop", repoOwner = "TrenTech", version = Resource.VERSION)
-@Plugin(id = Resource.ID, name = Resource.NAME, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
 public class MoneyDrop {
-
-	private static Logger log;
-	private static PluginContainer plugin;
-
-	private static EconomyService economy;
-
-	@Listener
-	public void onPreInitializationEvent(GamePreInitializationEvent event) {
-		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
-		log = getPlugin().getLogger();
-	}
-
-	@Listener
-	public void onInitializationEvent(GameInitializationEvent event) {
-		Sponge.getDataManager().register(MoneyData.class, ImmutableMoneyData.class, new MoneyDataManipulatorBuilder());
-	}
-
-	@Listener
-	public void onPostInitializationEvent(GamePostInitializationEvent event) {
-		if (!setupEconomy()) {
-			getLog().error("No economy plugin found. Disabling MoneyDrop...");
-			return;
-		}
-
-		ConfigManager.get().init();
-
-		Sponge.getEventManager().registerListeners(this, new EventListener());
-	}
-
-	@Listener
-	public void onReloadEvent(GameReloadEvent event) {
-		ConfigManager.get().init();
-
-		for (World world : Sponge.getServer().getWorlds()) {
-			Settings.close(world);
-			Settings.init(world);
-		}
-	}
-
-	private boolean setupEconomy() {
-		Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
-
-		if (optionalEconomy.isPresent()) {
-			economy = optionalEconomy.get();
-		}
-
-		return optionalEconomy.isPresent();
-	}
-
-	static EconomyService getEconomy() {
-		return economy;
-	}
-
-	public static Logger getLog() {
-		return log;
-	}
-
-	public static PluginContainer getPlugin() {
-		return plugin;
-	}
 	
 	public static List<MoneyStack> createMoneyStacks(Settings settings, double amount) {
 		List<MoneyStack> moneyStacks = new ArrayList<>();
@@ -136,5 +66,50 @@ public class MoneyDrop {
 			return moneyData.amount().get();
 		}
 		return 0;
+	}
+	
+	public static void giveOrTakeMoney(Player player, BigDecimal amount) {
+		EconomyService economy = Main.getEconomy();
+
+		UniqueAccount account = economy.getOrCreateAccount(player.getUniqueId()).get();
+
+		if (amount.compareTo(BigDecimal.ZERO) > 0) {
+			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
+		} else if (amount.compareTo(BigDecimal.ZERO) < 0) {
+
+			BigDecimal pocket = account.getBalance(economy.getDefaultCurrency());
+			if (pocket.add(amount).compareTo(BigDecimal.ZERO) < 0) {
+				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.getPlugin())));
+			} else {
+				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
+			}
+		}
+	}
+
+	public static void sendDeathChatMessage(Settings settings, Player player, double amount) {
+		if (settings.isDeathChatNotification()) {
+			double money;
+			if (amount % 1 == 0) {
+				money = amount;
+			} else {
+				money = (amount * 1000) / 1000.0;
+			}
+			String deathmessage = settings.getDeathChatMessage().replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
+			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
+		}
+	}
+
+	public static void sendPickupChatMessage(Settings settings, Player player, double amount) {
+		if (settings.isPickupChatNotification()) {
+			String message = settings.getPickupChatMessage();
+			double money;
+			if (amount % 1 == 0) {
+				money = amount;
+			} else {
+				money = (amount * 1000) / 1000.0;
+			}
+			message = message.replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
+			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(message));
+		}
 	}
 }

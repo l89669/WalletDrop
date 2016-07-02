@@ -1,7 +1,6 @@
-package com.gmail.trentech.MoneyDrop;
+package com.gmail.trentech.MoneyDrop.core;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,18 +33,18 @@ import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.service.economy.EconomyService;
-import org.spongepowered.api.service.economy.account.UniqueAccount;
-import org.spongepowered.api.text.serializer.TextSerializers;
 
-import com.gmail.trentech.MoneyDrop.data.MoneyData;
-import com.gmail.trentech.MoneyDrop.data.MoneyDataManipulatorBuilder;
-import com.gmail.trentech.MoneyDrop.dropdata.MobDropData;
-import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData;
-import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.MoneyDrop;
+import com.gmail.trentech.MoneyDrop.core.data.MobDropData;
+import com.gmail.trentech.MoneyDrop.core.data.MoneyData;
+import com.gmail.trentech.MoneyDrop.core.data.MoneyDataManipulatorBuilder;
+import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData;
+import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.core.utils.Settings;
+import com.gmail.trentech.MoneyDrop.data.MoneyStack;
 import com.gmail.trentech.MoneyDrop.events.MoneyDropEvent;
 import com.gmail.trentech.MoneyDrop.events.MoneyPickupEvent;
 import com.gmail.trentech.MoneyDrop.events.PlayerMoneyDropEvent;
-import com.gmail.trentech.MoneyDrop.utils.Settings;
 
 public class EventListener {
 
@@ -119,14 +118,14 @@ public class EventListener {
 			}
 		}
 
-		MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
+		MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(Main.getPlugin())));
 
 		if (!Sponge.getEventManager().post(mpEvent)) {
 			player.getInventory().query(itemStack).clear();
 
-			giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
+			MoneyDrop.giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
 
-			sendPickupChatMessage(Settings.get(player.getWorld()), player, amount);
+			MoneyDrop.sendPickupChatMessage(Settings.get(player.getWorld()), player, amount);
 		}
 	}
 
@@ -154,14 +153,14 @@ public class EventListener {
 				}
 			}
 
-			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
+			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(Main.getPlugin())));
 
 			if (!Sponge.getEventManager().post(mpEvent)) {
 				player.getInventory().query(itemStack).clear();
 
-				giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
+				MoneyDrop.giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
 
-				sendPickupChatMessage(Settings.get(player.getWorld()), player, amount);
+				MoneyDrop.sendPickupChatMessage(Settings.get(player.getWorld()), player, amount);
 			}
 		}
 	}
@@ -236,7 +235,7 @@ public class EventListener {
 			basedrops = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
 		}
 
-		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, MoneyDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
+		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, MoneyDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(Main.getPlugin())));
 
 		if (!Sponge.getEventManager().post(moneyDropEvent)) {
 			settings.getDropsPerSecond().add();
@@ -255,7 +254,7 @@ public class EventListener {
 
 		Settings settings = Settings.get(player.getWorld());
 
-		EconomyService economy = MoneyDrop.getEconomy();
+		EconomyService economy = Main.getEconomy();
 
 		double dropAmount = getSpecialDrop(player);
 		boolean specialdrop = (dropAmount == -1);
@@ -310,16 +309,16 @@ public class EventListener {
 			dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 		}
 
-		PlayerMoneyDropEvent playerMoneyDropEvent = new PlayerMoneyDropEvent(event, MoneyDrop.createMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
+		PlayerMoneyDropEvent playerMoneyDropEvent = new PlayerMoneyDropEvent(event, MoneyDrop.createMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(Main.getPlugin())));
 
 		if (playerMoneyDropEvent.getPlayerLossAmount() != 0 && (!Sponge.getEventManager().post(playerMoneyDropEvent))) {
-			giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getPlayerLossAmount()));
+			MoneyDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getPlayerLossAmount()));
 
 			for (MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
 				moneyStack.drop(playerMoneyDropEvent.getLocation());
 			}
 
-			sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getPlayerLossAmount());
+			MoneyDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getPlayerLossAmount());
 		}
 	}
 
@@ -353,51 +352,6 @@ public class EventListener {
 			return optionalMoney.get().amount().get();
 		} else {
 			return -1;
-		}
-	}
-
-	private void giveOrTakeMoney(Player player, BigDecimal amount) {
-		EconomyService economy = MoneyDrop.getEconomy();
-
-		UniqueAccount account = economy.getOrCreateAccount(player.getUniqueId()).get();
-
-		if (amount.compareTo(BigDecimal.ZERO) > 0) {
-			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
-		} else if (amount.compareTo(BigDecimal.ZERO) < 0) {
-
-			BigDecimal pocket = account.getBalance(economy.getDefaultCurrency());
-			if (pocket.add(amount).compareTo(BigDecimal.ZERO) < 0) {
-				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
-			} else {
-				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
-			}
-		}
-	}
-
-	private void sendDeathChatMessage(Settings settings, Player player, double amount) {
-		if (settings.isDeathChatNotification()) {
-			double money;
-			if (amount % 1 == 0) {
-				money = amount;
-			} else {
-				money = (amount * 1000) / 1000.0;
-			}
-			String deathmessage = settings.getDeathChatMessage().replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
-		}
-	}
-
-	private void sendPickupChatMessage(Settings settings, Player player, double amount) {
-		if (settings.isPickupChatNotification()) {
-			String message = settings.getPickupChatMessage();
-			double money;
-			if (amount % 1 == 0) {
-				money = amount;
-			} else {
-				money = (amount * 1000) / 1000.0;
-			}
-			message = message.replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(message));
 		}
 	}
 }

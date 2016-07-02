@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.utils;
+package com.gmail.trentech.MoneyDrop.core.data;
 
 import java.util.function.Consumer;
 

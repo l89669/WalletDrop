@@ -5,7 +5,7 @@ import java.util.List;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 
-import com.gmail.trentech.MoneyDrop.MoneyStack;
+import com.gmail.trentech.MoneyDrop.data.MoneyStack;
 
 public class PlayerMoneyDropEvent extends MoneyDropEvent {
 

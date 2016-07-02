@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.utils;
+package com.gmail.trentech.MoneyDrop.core.utils;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,10 +17,11 @@ import org.spongepowered.api.entity.living.monster.Zombie;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.MoneyDrop;
-import com.gmail.trentech.MoneyDrop.dropdata.MobDropData;
-import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData;
-import com.gmail.trentech.MoneyDrop.dropdata.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.MoneyDrop.core.Main;
+import com.gmail.trentech.MoneyDrop.core.data.DropsPerSecond;
+import com.gmail.trentech.MoneyDrop.core.data.MobDropData;
+import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData;
+import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 
@@ -60,7 +61,7 @@ public class Settings {
 		DropsPerSecond dps = new DropsPerSecond(0);
 		dps.setDroplimit(settings.getDropLimit());
 
-		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(MoneyDrop.getPlugin());
+		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.getPlugin());
 		
 		Settings.dps.put(world.getName(), dps);
 	}
@@ -130,7 +131,7 @@ public class Settings {
 
 		for (MDDeathReason deathReason : MDDeathReason.values()) {
 			if (!playerdrops.setDeathAmount(configManager.getConfig().getNode("1:settings", "1:players", deathReason.getName()).getString(), deathReason)) {
-				MoneyDrop.getLog().error("Invalid amount at 1:settings, 1:players, " + deathReason.getName() + " Reverting to 0.");
+				Main.getLog().error("Invalid amount at 1:settings, 1:players, " + deathReason.getName() + " Reverting to 0.");
 			}
 		}
 
@@ -167,7 +168,7 @@ public class Settings {
 		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
 
 		if (!optionalType.isPresent()) {
-			MoneyDrop.getLog().error(itemType + " is an not valid");
+			Main.getLog().error(itemType + " is an not valid");
 			return null;
 		} else {
 			return optionalType.get();

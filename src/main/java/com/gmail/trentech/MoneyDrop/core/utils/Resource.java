@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.utils;
+package com.gmail.trentech.MoneyDrop.core.utils;
 
 public class Resource {
 

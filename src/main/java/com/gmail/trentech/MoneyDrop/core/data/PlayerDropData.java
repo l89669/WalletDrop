@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.dropdata;
+package com.gmail.trentech.MoneyDrop.core.data;
 
 public class PlayerDropData {
 
