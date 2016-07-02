@@ -103,6 +103,9 @@ public class ConfigManager {
 			if (config.getNode("1:settings", "hoppers-destroy-money").isVirtual()) {
 				config.getNode("1:settings", "hoppers-destroy-money").setValue(false).setComment("!!!NOT IMPLEMENTED YET!!!");
 			}
+			if (config.getNode("1:settings", "max-drops-per-second").isVirtual()) {
+				config.getNode("1:settings", "max-drops-per-second").setValue(0).setComment("The maximum amount of drops that can happen in a second. Set this to 0 if you don't want your drops to be limited. Requires reload");
+			}
 			if (config.getNode("1:settings", "pickup-chat-notification-enabled").isVirtual()) {
 				config.getNode("1:settings", "pickup-chat-notification-enabled").setValue(true).setComment("Send player message when picking up money");
 			}
@@ -198,6 +201,9 @@ public class ConfigManager {
 			}
 			if (config.getNode("1:settings", "hoppers-destroy-money").isVirtual()) {
 				config.getNode("1:settings", "hoppers-destroy-money").setValue(global.getNode("1:settings", "hoppers-destroy-money").getBoolean()).setComment("!!!NOT IMPLEMENTED YET!!!");
+			}
+			if (config.getNode("1:settings", "max-drops-per-second").isVirtual()) {
+				config.getNode("1:settings", "max-drops-per-second").setValue(global.getNode("1:settings", "max-drops-per-second").getInt()).setComment("The maximum amount of drops that can happen in a second. Set this to 0 if you don't want your drops to be limited. Requires reload");
 			}
 			if (config.getNode("1:settings", "pickup-chat-notification-enabled").isVirtual()) {
 				config.getNode("1:settings", "pickup-chat-notification-enabled").setValue(global.getNode("1:settings", "pickup-chat-notification-enabled").getBoolean()).setComment("Send player message when picking up money");

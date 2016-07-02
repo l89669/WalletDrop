@@ -30,6 +30,7 @@ import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
+import org.spongepowered.api.event.world.UnloadWorldEvent;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.ItemStackSnapshot;
 import org.spongepowered.api.service.economy.EconomyService;
@@ -51,10 +52,15 @@ public class EventListener {
 	private static ThreadLocalRandom random = ThreadLocalRandom.current();
 
 	@Listener
-	public void onWorldLoad(LoadWorldEvent event) {
-		Settings.initSettings(event.getTargetWorld());
+	public void onLoadWorldEvent(LoadWorldEvent event) {
+		Settings.init(event.getTargetWorld());
 	}
 
+	@Listener
+	public void onUnloadWorldEvent(UnloadWorldEvent event) {
+		Settings.close(event.getTargetWorld());
+	}
+	
 	@Listener
 	public void onDestructEntityEventHopper(DestructEntityEvent event, @First Hopper hopper) {
 		if (!(event.getTargetEntity() instanceof Item)) {
@@ -173,6 +179,10 @@ public class EventListener {
 
 		Settings settings = Settings.get(entity.getWorld());
 
+		if(settings.getDropsPerSecond().isAtDropLimit()) {
+			return;
+		}
+		
 		if (settings.isKillOnlyDrops()) {
 			Player player;
 			if (src.getSource() instanceof Player) {
@@ -229,6 +239,7 @@ public class EventListener {
 		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, MoneyDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(MoneyDrop.getPlugin())));
 
 		if (!Sponge.getEventManager().post(moneyDropEvent)) {
+			settings.getDropsPerSecond().add();
 			for (MoneyStack moneyStack : moneyDropEvent.getMoneyStacks()) {
 				moneyStack.drop(moneyDropEvent.getLocation());
 			}

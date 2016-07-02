@@ -66,7 +66,8 @@ public class MoneyDrop {
 		ConfigManager.get().init();
 
 		for (World world : Sponge.getServer().getWorlds()) {
-			Settings.initSettings(world);
+			Settings.close(world);
+			Settings.init(world);
 		}
 	}
 

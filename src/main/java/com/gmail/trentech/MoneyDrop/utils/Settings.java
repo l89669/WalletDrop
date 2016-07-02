@@ -1,6 +1,7 @@
 package com.gmail.trentech.MoneyDrop.utils;
 
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.manipulator.mutable.entity.SkeletonData;
@@ -25,10 +26,13 @@ import ninja.leaping.configurate.ConfigurationNode;
 
 public class Settings {
 
+	private String worldName;
 	private ConfigManager configManager;
-
-	private Settings(ConfigManager config) {
-		this.configManager = config;
+	private static ConcurrentHashMap<String,DropsPerSecond> dps = new ConcurrentHashMap<>();
+	
+	private Settings(World world) {
+		this.configManager = ConfigManager.get(world);
+		this.worldName = world.getName();
 	}
 
 	private Settings() {
@@ -36,16 +40,29 @@ public class Settings {
 	}
 
 	public static Settings get(World world) {
-		return new Settings(ConfigManager.get(world));
+		return new Settings(world);
 	}
 
 	public static Settings get() {
 		return new Settings();
 	}
 
-	public static void initSettings(World world) {
+	public static void close(World world) {
+		dps.remove(world.getName());
+	}
+	
+	public static void init(World world) {
 		ConfigManager configManager = ConfigManager.get(world);
 		configManager.init();
+		
+		Settings settings = get(world);
+		
+		DropsPerSecond dps = new DropsPerSecond(0);
+		dps.setDroplimit(settings.getDropLimit());
+
+		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(MoneyDrop.getPlugin());
+		
+		Settings.dps.put(world.getName(), dps);
 	}
 
 	private MobDropData getMobData(String entity) {
@@ -191,5 +208,13 @@ public class Settings {
 
 	public int getItemUnsafeDamage() {
 		return configManager.getConfig().getNode("1:settings", "dropped-item-unsafe-damage").getInt();
+	}
+	
+	public DropsPerSecond getDropsPerSecond() {
+		return dps.get(worldName);
+	}
+	
+	public int getDropLimit() {
+		return configManager.getConfig().getNode("1:settings", "max-drops-per-second").getInt();
 	}
 }
