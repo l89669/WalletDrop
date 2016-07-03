@@ -15,6 +15,8 @@ import org.spongepowered.api.entity.living.monster.Creeper;
 import org.spongepowered.api.entity.living.monster.Skeleton;
 import org.spongepowered.api.entity.living.monster.Zombie;
 import org.spongepowered.api.item.ItemType;
+import org.spongepowered.api.text.chat.ChatType;
+import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.MoneyDrop.core.Main;
@@ -29,7 +31,7 @@ public class Settings {
 
 	private String worldName;
 	private ConfigManager configManager;
-	private static ConcurrentHashMap<String,DropsPerSecond> dps = new ConcurrentHashMap<>();
+	private static ConcurrentHashMap<String, DropsPerSecond> dps = new ConcurrentHashMap<>();
 	
 	private Settings(World world) {
 		this.configManager = ConfigManager.get(world);
@@ -66,8 +68,145 @@ public class Settings {
 		Settings.dps.put(world.getName(), dps);
 	}
 
+	public DropsPerSecond getDropsPerSecond() {
+		return dps.get(worldName);
+	}
+	
+	public boolean isKillOnlyDrops() {
+		return configManager.getConfig().getNode("1:drops", "only-on-kill").getBoolean();
+	}
+
+	public double getMaxStackValue() {
+		return configManager.getConfig().getNode("1:drops", "max-value").getDouble();
+	}
+	
+	public int getDropLimit() {
+		return configManager.getConfig().getNode("1:drops", "max-per-second").getInt();
+	}
+	
+	public double getPrecision() {
+		return configManager.getConfig().getNode("1:drops", "precision").getDouble();
+	}
+	
+	public boolean isHopperAllowed() {
+		return !configManager.getConfig().getNode("1:drops", "hoppers-destroy").getBoolean();
+	}
+	
+	public ItemType getItemType() {
+		String itemType = configManager.getConfig().getNode("1:drops", "1:item", "id").getString();
+
+		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
+
+		if (!optionalType.isPresent()) {
+			Main.getLog().error(itemType + " is an not valid");
+			return null;
+		} else {
+			return optionalType.get();
+		}
+	}
+	
+	public int getItemUnsafeDamage() {
+		return configManager.getConfig().getNode("1:drops", "1:item", "unsafe-damage").getInt();
+	}
+	public boolean isVanillaSpawnerAllowed() {
+		return configManager.getConfig().getNode("2:spawners", "vanilla").getBoolean();
+	}
+
+	public boolean isModSpawnerAllowed() {
+		return configManager.getConfig().getNode("2:spawners", "mods").getBoolean();
+	}
+
+	public boolean isPluginSpawnerAllowed() {
+		return configManager.getConfig().getNode("2:spawners", "plugins").getBoolean();
+	}
+	
+	public boolean isEggSpawnerAllowed() {
+		return configManager.getConfig().getNode("2:spawners", "egg").getBoolean();
+	}
+	
+	public PlayerDropData getPlayerDrops() {
+		PlayerDropData playerdrops = new PlayerDropData(getPrecision());
+
+		for (MDDeathReason deathReason : MDDeathReason.values()) {
+			if (!playerdrops.setDeathAmount(configManager.getConfig().getNode("3:players", deathReason.getName()).getString(), deathReason)) {
+				Main.getLog().error("Invalid amount at 3:players, " + deathReason.getName() + " Reverting to 0.");
+			}
+		}
+
+		return playerdrops;
+	}
+	
+	private enum NotificationType {
+		ACTION_BAR("ACTION_BAR", ChatTypes.ACTION_BAR), 
+		CHAT("CHAT", ChatTypes.CHAT);
+		
+		private String name;
+		private ChatType chatType;
+
+		private NotificationType(String name, ChatType chatType) {
+			this.name = name;
+			this.chatType = chatType;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public ChatType getChatType() {
+			return chatType;
+		}
+		
+		public static Optional<NotificationType> get(String name) {
+			
+			for (NotificationType type : NotificationType.values()) {
+				if(type.getName().equalsIgnoreCase(name)) {
+					return Optional.of(type);
+				}
+			}
+			
+			return Optional.empty();
+		}
+	}
+	
+	public boolean isPickupChatNotification() {
+		return configManager.getConfig().getNode("4:notifications", "1:pickup", "enable").getBoolean();
+	}
+
+	public String getPickupChatMessage() {
+		return configManager.getConfig().getNode("4:notifications", "1:pickup", "message").getString();
+	}
+
+	public boolean isDeathChatNotification() {
+		return configManager.getConfig().getNode("4:notifications", "2:death", "enable").getBoolean();
+	}
+
+	public String getDeathChatMessage() {
+		return configManager.getConfig().getNode("4:notifications", "2:death", "message").getString();
+	}
+	
+	public ChatType getChatType() {
+		String chatType = configManager.getConfig().getNode("4:notifications", "location").getString();
+		
+		Optional<NotificationType> optionalType = NotificationType.get(chatType);
+
+		if (!optionalType.isPresent()) {
+			Main.getLog().error(chatType + " is an not valid");
+			return null;
+		} else {
+			return optionalType.get().getChatType();
+		}
+	}
+	
+	public boolean isCreativeModeAllowed() {
+		return configManager.getConfig().getNode("5:settings", "allow-creative-mode").getBoolean();
+	}
+
+	public boolean isUsePermissions() {
+		return configManager.getConfig().getNode("5:settings", "use-permissions").getBoolean();
+	}
+	
 	private MobDropData getMobData(String entity) {
-		ConfigurationNode node = configManager.getConfig().getNode("2:mobs");
+		ConfigurationNode node = configManager.getConfig().getNode("6:mobs");
 
 		double min = node.getNode(entity, "dropped-minimum").getDouble();
 		double max = node.getNode(entity, "dropped-maximum").getDouble();
@@ -124,98 +263,5 @@ public class Settings {
 		}
 
 		return getMobData(entityId);
-	}
-
-	public PlayerDropData getPlayerDrops() {
-		PlayerDropData playerdrops = new PlayerDropData(getPrecision());
-
-		for (MDDeathReason deathReason : MDDeathReason.values()) {
-			if (!playerdrops.setDeathAmount(configManager.getConfig().getNode("1:settings", "1:players", deathReason.getName()).getString(), deathReason)) {
-				Main.getLog().error("Invalid amount at 1:settings, 1:players, " + deathReason.getName() + " Reverting to 0.");
-			}
-		}
-
-		return playerdrops;
-	}
-
-	public boolean isVanillaSpawnerAllowed() {
-		return configManager.getConfig().getNode("1:settings", "allow-vanilla-mobspawners").getBoolean();
-	}
-
-	public boolean isModSpawnerAllowed() {
-		return configManager.getConfig().getNode("1:settings", "allow-mod-mobspawners").getBoolean();
-	}
-
-	public boolean isPluginSpawnerAllowed() {
-		return configManager.getConfig().getNode("1:settings", "allow-plugin-mobspawners").getBoolean();
-	}
-	
-	public boolean isEggSpawnerAllowed() {
-		return configManager.getConfig().getNode("1:settings", "allow-egg-spawners").getBoolean();
-	}
-
-	public boolean isKillOnlyDrops() {
-		return configManager.getConfig().getNode("1:settings", "mobs-only-drop-on-kill").getBoolean();
-	}
-
-	public double getMaxStackValue() {
-		return configManager.getConfig().getNode("1:settings", "max-stack-value").getDouble();
-	}
-	
-	public ItemType getItemType() {
-		String itemType = configManager.getConfig().getNode("1:settings", "dropped-item-id").getString();
-
-		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
-
-		if (!optionalType.isPresent()) {
-			Main.getLog().error(itemType + " is an not valid");
-			return null;
-		} else {
-			return optionalType.get();
-		}
-	}
-
-	public boolean isPickupChatNotification() {
-		return configManager.getConfig().getNode("1:settings", "pickup-chat-notification-enabled").getBoolean();
-	}
-
-	public String getPickupChatMessage() {
-		return configManager.getConfig().getNode("1:settings", "pickup-chat-notification-message").getString();
-	}
-
-	public boolean isDeathChatNotification() {
-		return configManager.getConfig().getNode("1:settings", "death-chat-notification-enabled").getBoolean();
-	}
-
-	public String getDeathChatMessage() {
-		return configManager.getConfig().getNode("1:settings", "death-chat-notification-message").getString();
-	}
-
-	public double getPrecision() {
-		return configManager.getConfig().getNode("1:settings", "precision").getDouble();
-	}
-
-	public boolean isCreativeModeAllowed() {
-		return configManager.getConfig().getNode("1:settings", "allow-creative-mode").getBoolean();
-	}
-
-	public boolean isHopperAllowed() {
-		return !configManager.getConfig().getNode("1:settings", "hoppers-destroy-money").getBoolean();
-	}
-	
-	public boolean isUsePermissions() {
-		return configManager.getConfig().getNode("1:settings", "use-permissions").getBoolean();
-	}
-
-	public int getItemUnsafeDamage() {
-		return configManager.getConfig().getNode("1:settings", "dropped-item-unsafe-damage").getInt();
-	}
-	
-	public DropsPerSecond getDropsPerSecond() {
-		return dps.get(worldName);
-	}
-	
-	public int getDropLimit() {
-		return configManager.getConfig().getNode("1:settings", "max-drops-per-second").getInt();
 	}
 }

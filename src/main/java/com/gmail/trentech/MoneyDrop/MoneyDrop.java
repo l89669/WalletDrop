@@ -94,22 +94,25 @@ public class MoneyDrop {
 			} else {
 				money = (amount * 1000) / 1000.0;
 			}
+			
 			String deathmessage = settings.getDeathChatMessage().replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
+			player.sendMessage(settings.getChatType(), TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
 		}
 	}
 
 	public static void sendPickupChatMessage(Settings settings, Player player, double amount) {
 		if (settings.isPickupChatNotification()) {
 			String message = settings.getPickupChatMessage();
+			
 			double money;
 			if (amount % 1 == 0) {
 				money = amount;
 			} else {
 				money = (amount * 1000) / 1000.0;
 			}
+
 			message = message.replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(message));
+			player.sendMessage(settings.getChatType(), TextSerializers.FORMATTING_CODE.deserialize(message));
 		}
 	}
 }
