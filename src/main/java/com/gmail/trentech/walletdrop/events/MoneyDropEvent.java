@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.events;
+package com.gmail.trentech.walletdrop.events;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.data.MoneyStack;
+import com.gmail.trentech.walletdrop.data.MoneyStack;
 
 public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 
@@ -57,10 +57,12 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 		return specialDrop;
 	}
 
+	@Override
 	public boolean isCancelled() {
 		return cancelled;
 	}
 
+	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
 	}

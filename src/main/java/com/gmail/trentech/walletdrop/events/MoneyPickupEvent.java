@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.events;
+package com.gmail.trentech.walletdrop.events;
 
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Cancellable;
@@ -37,10 +37,12 @@ public class MoneyPickupEvent extends AbstractEvent implements Cancellable {
 		this.value = value;
 	}
 
+	@Override
 	public boolean isCancelled() {
 		return cancelled;
 	}
 
+	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
 	}

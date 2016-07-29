@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.core;
+package com.gmail.trentech.walletdrop.core;
 
 import java.util.Optional;
 
@@ -15,17 +15,17 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.core.data.ImmutableMoneyData;
-import com.gmail.trentech.MoneyDrop.core.data.MoneyData;
-import com.gmail.trentech.MoneyDrop.core.data.MoneyDataManipulatorBuilder;
-import com.gmail.trentech.MoneyDrop.core.utils.ConfigManager;
-import com.gmail.trentech.MoneyDrop.core.utils.Resource;
-import com.gmail.trentech.MoneyDrop.core.utils.Settings;
+import com.gmail.trentech.walletdrop.core.manipulators.ImmutableMoneyData;
+import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
+import com.gmail.trentech.walletdrop.core.manipulators.MoneyDataManipulatorBuilder;
+import com.gmail.trentech.walletdrop.core.utils.ConfigManager;
+import com.gmail.trentech.walletdrop.core.utils.Resource;
+import com.gmail.trentech.walletdrop.core.utils.Settings;
 
 import me.flibio.updatifier.Updatifier;
 
-@Updatifier(repoName = "MoneyDrop", repoOwner = "TrenTech", version = Resource.VERSION)
-@Plugin(id = Resource.ID, name = Resource.NAME, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
+@Updatifier(repoName = Resource.NAME, repoOwner = Resource.AUTHOR, version = Resource.VERSION)
+@Plugin(id = Resource.ID, name = Resource.NAME, version = Resource.VERSION, description = Resource.DESCRIPTION, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
 public class Main {
 
 	private static Logger log;

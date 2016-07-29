@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.data;
+package com.gmail.trentech.walletdrop.data;
 
 import java.util.Optional;
 
@@ -15,8 +15,8 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.core.data.MoneyData;
-import com.gmail.trentech.MoneyDrop.core.data.MoneyDataManipulatorBuilder;
+import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
+import com.gmail.trentech.walletdrop.core.manipulators.MoneyDataManipulatorBuilder;
 
 public class MoneyStack {
 

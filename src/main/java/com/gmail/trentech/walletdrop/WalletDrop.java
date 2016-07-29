@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop;
+package com.gmail.trentech.walletdrop;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -16,12 +16,12 @@ import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-import com.gmail.trentech.MoneyDrop.core.Main;
-import com.gmail.trentech.MoneyDrop.core.data.MoneyData;
-import com.gmail.trentech.MoneyDrop.core.utils.Settings;
-import com.gmail.trentech.MoneyDrop.data.MoneyStack;
+import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
+import com.gmail.trentech.walletdrop.core.utils.Settings;
+import com.gmail.trentech.walletdrop.data.MoneyStack;
 
-public class MoneyDrop {
+public class WalletDrop {
 	
 	public static List<MoneyStack> createMoneyStacks(Settings settings, double amount) {
 		List<MoneyStack> moneyStacks = new ArrayList<>();

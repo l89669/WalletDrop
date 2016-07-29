@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.core.utils;
+package com.gmail.trentech.walletdrop.core.utils;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,11 +19,11 @@ import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.core.Main;
-import com.gmail.trentech.MoneyDrop.core.data.DropsPerSecond;
-import com.gmail.trentech.MoneyDrop.core.data.MobDropData;
-import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData;
-import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.core.data.DropsPerSecond;
+import com.gmail.trentech.walletdrop.core.data.MobDropData;
+import com.gmail.trentech.walletdrop.core.data.PlayerDropData;
+import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 
@@ -108,6 +108,7 @@ public class Settings {
 	public int getItemUnsafeDamage() {
 		return configManager.getConfig().getNode("1:drops", "1:item", "unsafe-damage").getInt();
 	}
+	
 	public boolean isVanillaSpawnerAllowed() {
 		return configManager.getConfig().getNode("2:spawners", "vanilla").getBoolean();
 	}

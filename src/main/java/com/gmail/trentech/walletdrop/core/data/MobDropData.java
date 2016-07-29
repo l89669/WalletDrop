@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.core.data;
+package com.gmail.trentech.walletdrop.core.data;
 
 public class MobDropData {
 

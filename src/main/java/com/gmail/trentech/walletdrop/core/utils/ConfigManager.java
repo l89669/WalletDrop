@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.core.utils;
+package com.gmail.trentech.walletdrop.core.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +12,8 @@ import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.MoneyDrop.core.Main;
-import com.gmail.trentech.MoneyDrop.core.data.PlayerDropData.MDDeathReason;
+import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -27,7 +27,7 @@ public class ConfigManager {
 	private ConfigurationLoader<CommentedConfigurationNode> loader;
 
 	private ConfigManager() {
-		String folder = "config" + File.separator + "moneydrop";
+		String folder = "config" + File.separator + Resource.ID;
 		if (!new File(folder).isDirectory()) {
 			new File(folder).mkdirs();
 		}
@@ -38,7 +38,7 @@ public class ConfigManager {
 	}
 
 	private ConfigManager(String configName) {
-		String folder = "config" + File.separator + "moneydrop";
+		String folder = "config" + File.separator + Resource.ID;
 
 		if (!new File(folder).isDirectory()) {
 			new File(folder).mkdirs();
@@ -197,7 +197,7 @@ public class ConfigManager {
 			}
 			if (config.getNode("2:spawners", "mods").isVirtual()) {
 				config.getNode("2:spawners").setComment("enable mobs from different spawners dropping money");
-				config.getNode("2:spawners", "mods").setValue(global.getNode("2:spawners", "mod").getBoolean());
+				config.getNode("2:spawners", "mods").setValue(global.getNode("2:spawners", "mods").getBoolean());
 			}
 			if (config.getNode("2:spawners", "plugins").isVirtual()) {
 				config.getNode("2:spawners", "plugins").setValue(global.getNode("2:spawners", "plugins").getBoolean());

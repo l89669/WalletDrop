@@ -1,4 +1,4 @@
-package com.gmail.trentech.MoneyDrop.core.data;
+package com.gmail.trentech.walletdrop.core.manipulators;
 
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.key.Key;

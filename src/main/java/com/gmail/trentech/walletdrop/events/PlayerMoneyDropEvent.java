@@ -1,11 +1,11 @@
-package com.gmail.trentech.MoneyDrop.events;
+package com.gmail.trentech.walletdrop.events;
 
 import java.util.List;
 
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 
-import com.gmail.trentech.MoneyDrop.data.MoneyStack;
+import com.gmail.trentech.walletdrop.data.MoneyStack;
 
 public class PlayerMoneyDropEvent extends MoneyDropEvent {
 
