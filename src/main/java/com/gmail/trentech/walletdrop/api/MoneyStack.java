@@ -1,4 +1,4 @@
-package com.gmail.trentech.walletdrop.data;
+package com.gmail.trentech.walletdrop.api;
 
 import java.util.Optional;
 

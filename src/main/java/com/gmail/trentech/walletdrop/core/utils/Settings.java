@@ -19,7 +19,7 @@ import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.Main;
 import com.gmail.trentech.walletdrop.core.data.DropsPerSecond;
 import com.gmail.trentech.walletdrop.core.data.MobDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData;
@@ -63,7 +63,7 @@ public class Settings {
 		DropsPerSecond dps = new DropsPerSecond(0);
 		dps.setDroplimit(settings.getDropLimit());
 
-		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.getPlugin());
+		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.getInstance().getPlugin());
 		
 		Settings.dps.put(world.getName(), dps);
 	}
@@ -98,7 +98,7 @@ public class Settings {
 		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
 
 		if (!optionalType.isPresent()) {
-			Main.getLog().error(itemType + " is an not valid");
+			Main.getInstance().getLog().error(itemType + " is an not valid");
 			return null;
 		} else {
 			return optionalType.get();
@@ -130,7 +130,7 @@ public class Settings {
 
 		for (MDDeathReason deathReason : MDDeathReason.values()) {
 			if (!playerdrops.setDeathAmount(configManager.getConfig().getNode("3:players", deathReason.getName()).getString(), deathReason)) {
-				Main.getLog().error("Invalid amount at 3:players, " + deathReason.getName() + " Reverting to 0.");
+				Main.getInstance().getLog().error("Invalid amount at 3:players, " + deathReason.getName() + " Reverting to 0.");
 			}
 		}
 
@@ -191,7 +191,7 @@ public class Settings {
 		Optional<NotificationType> optionalType = NotificationType.get(chatType);
 
 		if (!optionalType.isPresent()) {
-			Main.getLog().error(chatType + " is an not valid");
+			Main.getInstance().getLog().error(chatType + " is an not valid");
 			return null;
 		} else {
 			return optionalType.get().getChatType();

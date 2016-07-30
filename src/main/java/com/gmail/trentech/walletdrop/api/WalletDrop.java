@@ -1,4 +1,4 @@
-package com.gmail.trentech.walletdrop;
+package com.gmail.trentech.walletdrop.api;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -16,10 +16,9 @@ import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
-import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.Main;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
 import com.gmail.trentech.walletdrop.core.utils.Settings;
-import com.gmail.trentech.walletdrop.data.MoneyStack;
 
 public class WalletDrop {
 	
@@ -69,19 +68,19 @@ public class WalletDrop {
 	}
 	
 	public static void giveOrTakeMoney(Player player, BigDecimal amount) {
-		EconomyService economy = Main.getEconomy();
+		EconomyService economy = Main.getInstance().getEconomy();
 
 		UniqueAccount account = economy.getOrCreateAccount(player.getUniqueId()).get();
 
 		if (amount.compareTo(BigDecimal.ZERO) > 0) {
-			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
+			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
 		} else if (amount.compareTo(BigDecimal.ZERO) < 0) {
 
 			BigDecimal pocket = account.getBalance(economy.getDefaultCurrency());
 			if (pocket.add(amount).compareTo(BigDecimal.ZERO) < 0) {
-				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
 			} else {
-				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
 			}
 		}
 	}

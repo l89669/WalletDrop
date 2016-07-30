@@ -33,17 +33,18 @@ import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.item.inventory.transaction.SlotTransaction;
 import org.spongepowered.api.service.economy.EconomyService;
 
-import com.gmail.trentech.walletdrop.WalletDrop;
+import com.gmail.trentech.walletdrop.Main;
+import com.gmail.trentech.walletdrop.api.MoneyStack;
+import com.gmail.trentech.walletdrop.api.WalletDrop;
+import com.gmail.trentech.walletdrop.api.events.MoneyDropEvent;
+import com.gmail.trentech.walletdrop.api.events.MoneyPickupEvent;
+import com.gmail.trentech.walletdrop.api.events.PlayerMoneyDropEvent;
 import com.gmail.trentech.walletdrop.core.data.MobDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyDataManipulatorBuilder;
 import com.gmail.trentech.walletdrop.core.utils.Settings;
-import com.gmail.trentech.walletdrop.data.MoneyStack;
-import com.gmail.trentech.walletdrop.events.MoneyDropEvent;
-import com.gmail.trentech.walletdrop.events.MoneyPickupEvent;
-import com.gmail.trentech.walletdrop.events.PlayerMoneyDropEvent;
 
 public class EventListener {
 
@@ -107,12 +108,12 @@ public class EventListener {
 				}
 			}
 
-			MoneyPickupEvent mpEvent = new MoneyPickupEvent(player, itemStack, amount, Cause.of(NamedCause.source(Main.getPlugin())));
+			MoneyPickupEvent mpEvent = new MoneyPickupEvent(itemStack, amount, Cause.of(NamedCause.source(player)));
 
 			if (!Sponge.getEventManager().post(mpEvent)) {
 				Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute(c -> {
 					player.getInventory().query(itemStack).clear();
-				}).submit(Main.getPlugin());			
+				}).submit(Main.getInstance().getPlugin());			
 				
 				WalletDrop.giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
 				
@@ -191,7 +192,7 @@ public class EventListener {
 			basedrops = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
 		}
 
-		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(event, WalletDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(Main.getPlugin())));
+		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(WalletDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(entity)));
 
 		if (!Sponge.getEventManager().post(moneyDropEvent)) {
 			settings.getDropsPerSecond().add();
@@ -210,7 +211,7 @@ public class EventListener {
 
 		Settings settings = Settings.get(player.getWorld());
 
-		EconomyService economy = Main.getEconomy();
+		EconomyService economy = Main.getInstance().getEconomy();
 
 		double dropAmount = getSpecialDrop(player);
 		boolean specialdrop = (dropAmount == -1);
@@ -235,7 +236,6 @@ public class EventListener {
 					reason = MDDeathReason.PLAYER_ATTACK;
 				} else {
 					reason = MDDeathReason.MOB_ATTACK;
-					;
 				}
 			} else {
 				DamageType cause = src.getType();
@@ -265,7 +265,7 @@ public class EventListener {
 			dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 		}
 
-		PlayerMoneyDropEvent playerWalletDropEvent = new PlayerMoneyDropEvent(event, WalletDrop.createMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(Main.getPlugin())));
+		PlayerMoneyDropEvent playerWalletDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(player)));
 
 		if (playerWalletDropEvent.getPlayerLossAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
 			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getPlayerLossAmount()));

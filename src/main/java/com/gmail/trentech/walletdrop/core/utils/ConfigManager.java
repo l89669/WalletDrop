@@ -12,7 +12,7 @@ import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.world.World;
 
-import com.gmail.trentech.walletdrop.core.Main;
+import com.gmail.trentech.walletdrop.Main;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
 
 import ninja.leaping.configurate.ConfigurationNode;
@@ -309,10 +309,10 @@ public class ConfigManager {
 	private void create() {
 		if (!file.exists()) {
 			try {
-				Main.getLog().info("Creating new " + file.getName() + " file...");
+				Main.getInstance().getLog().info("Creating new " + file.getName() + " file...");
 				file.createNewFile();
 			} catch (IOException e) {
-				Main.getLog().error("Failed to create new config file");
+				Main.getInstance().getLog().error("Failed to create new config file");
 				e.printStackTrace();
 			}
 		}
@@ -323,7 +323,7 @@ public class ConfigManager {
 		try {
 			config = loader.load();
 		} catch (IOException e) {
-			Main.getLog().error("Failed to load config");
+			Main.getInstance().getLog().error("Failed to load config");
 			e.printStackTrace();
 		}
 	}
@@ -332,7 +332,7 @@ public class ConfigManager {
 		try {
 			loader.save(config);
 		} catch (IOException e) {
-			Main.getLog().error("Failed to save config");
+			Main.getInstance().getLog().error("Failed to save config");
 			e.printStackTrace();
 		}
 	}

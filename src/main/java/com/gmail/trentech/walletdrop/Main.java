@@ -1,4 +1,4 @@
-package com.gmail.trentech.walletdrop.core;
+package com.gmail.trentech.walletdrop;
 
 import java.util.Optional;
 
@@ -15,6 +15,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.world.World;
 
+import com.gmail.trentech.walletdrop.core.EventListener;
 import com.gmail.trentech.walletdrop.core.manipulators.ImmutableMoneyData;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyDataManipulatorBuilder;
@@ -28,13 +29,15 @@ import me.flibio.updatifier.Updatifier;
 @Plugin(id = Resource.ID, name = Resource.NAME, version = Resource.VERSION, description = Resource.DESCRIPTION, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
 public class Main {
 
-	private static Logger log;
-	private static PluginContainer plugin;
-
-	private static EconomyService economy;
-
+	private Logger log;
+	private PluginContainer plugin;
+	private EconomyService economy;
+	
+	private static Main instance;
+	
 	@Listener
 	public void onPreInitializationEvent(GamePreInitializationEvent event) {
+		instance = this;
 		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
 		log = getPlugin().getLogger();
 	}
@@ -76,15 +79,19 @@ public class Main {
 		return optionalEconomy.isPresent();
 	}
 
-	public static EconomyService getEconomy() {
+	public static Main getInstance() {
+        return instance;
+    }
+	
+	public EconomyService getEconomy() {
 		return economy;
 	}
 
-	public static Logger getLog() {
+	public Logger getLog() {
 		return log;
 	}
 
-	public static PluginContainer getPlugin() {
+	public PluginContainer getPlugin() {
 		return plugin;
 	}
 }
