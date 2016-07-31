@@ -24,7 +24,7 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 	protected Cause cause;
 	protected boolean cancelled = false;
 
-	public MoneyDropEvent(List<MoneyStack> moneyStacks, boolean specialDrop, Cause cause) {
+	public MoneyDropEvent(List<MoneyStack> moneyStacks, Cause cause) {
 		Optional<Living> optionalLiving = cause.first(Living.class);
 		
 		if(optionalLiving.isPresent()) {
@@ -33,7 +33,6 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 		}
 		
 		this.moneyStacks = moneyStacks;
-		this.specialDrop = specialDrop;
 		this.cause = cause;
 	}
 
@@ -67,10 +66,6 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 	 */
 	public void setLocation(Location<World> dropLocation) {
 		this.dropLocation = dropLocation;
-	}
-
-	public boolean isSpecialDrop() {
-		return specialDrop;
 	}
 
 	@Override

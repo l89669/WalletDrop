@@ -10,27 +10,27 @@ import com.gmail.trentech.walletdrop.api.MoneyStack;
  */
 public class PlayerMoneyDropEvent extends MoneyDropEvent {
 
-	protected double playerLossAmount;
+	protected double dropAmount;
 
-	public PlayerMoneyDropEvent(List<MoneyStack> moneyStacks, boolean specialDrop, Cause cause) {
-		super(moneyStacks, specialDrop, cause);
+	public PlayerMoneyDropEvent(List<MoneyStack> moneyStacks, Cause cause) {
+		super(moneyStacks, cause);
 		
 		for (int i = 0; i < moneyStacks.size(); i++) {
-			this.playerLossAmount += moneyStacks.get(i).getValue();
+			this.dropAmount += moneyStacks.get(i).getValue();
 		}
 	}
 
 	/*
 	 *  Gets the amount of money the player will drop
 	 */
-	public double getPlayerLossAmount() {
-		return playerLossAmount;
+	public double getDropAmount() {
+		return dropAmount;
 	}
 
 	/*
 	 * Set the amount of money the player will lose
 	 */
-	public void setPlayerLossAmount(double playerLossAmount) {
-		this.playerLossAmount = playerLossAmount;
+	public void setDropAmount(double dropAmount) {
+		this.dropAmount = dropAmount;
 	}
 }

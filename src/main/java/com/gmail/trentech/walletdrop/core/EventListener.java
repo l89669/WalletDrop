@@ -19,12 +19,12 @@ import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.cause.entity.damage.DamageType;
-import org.spongepowered.api.event.cause.entity.damage.DamageTypes;
 import org.spongepowered.api.event.cause.entity.damage.source.EntityDamageSource;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
+import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
@@ -158,26 +158,26 @@ public class EventListener {
 					return;
 				}
 				player = optionalPlayer.get();
-
-				if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
-					return;
-				}
-
-				if (settings.isUsePermissions()) {
-					if (!player.hasPermission("walletdrop.enable")) {
-						return;
-					}
-				}
 			} else {
 				return;
 			}
+			
+			if (player.gameMode().get().equals(GameModes.CREATIVE) && !settings.isCreativeModeAllowed()) {
+				return;
+			}
+
+			if (settings.isUsePermissions()) {
+				if (!player.hasPermission("walletdrop.enable")) {
+					return;
+				}
+			}
 		}
 
-		double basedrops = getSpecialDrop(entity);
-
-		boolean specialDrop = (basedrops == -1);
-
-		if (specialDrop) {
+		double dropAmount = 0;
+		
+		boolean validDrop = isValidDrop(entity);		
+		
+		if (validDrop) {
 			MobDropData drops = settings.getMobData(entity);
 
 			if (drops == null) {
@@ -189,10 +189,10 @@ public class EventListener {
 			}
 
 			double extra = ((drops.getMax() - drops.getMin()) * random.nextDouble()) * 1000;
-			basedrops = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
+			dropAmount = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
 		}
 
-		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(WalletDrop.createMoneyStacks(settings, basedrops), specialDrop, Cause.of(NamedCause.source(entity)));
+		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(entity)));
 
 		if (!Sponge.getEventManager().post(moneyDropEvent)) {
 			settings.getDropsPerSecond().add();
@@ -202,7 +202,7 @@ public class EventListener {
 		}
 	}
 
-	@Listener
+	@Listener(order = Order.PRE)
 	public void onDestructEntityEventDeathPlayer(DestructEntityEvent.Death event, @First EntityDamageSource src) {
 		if (!(event.getTargetEntity() instanceof Player)) {
 			return;
@@ -213,71 +213,53 @@ public class EventListener {
 
 		EconomyService economy = Main.getInstance().getEconomy();
 
-		double dropAmount = getSpecialDrop(player);
-		boolean specialdrop = (dropAmount == -1);
+		MDDeathReason reason = MDDeathReason.GENERIC;
 
-		if (specialdrop) {
-			MDDeathReason reason = MDDeathReason.OTHER;
+		if (src.getSource() instanceof Player) {
+			reason = MDDeathReason.PLAYER;
+		} else if (src.getSource() instanceof Projectile) {
+			Projectile projectile = (Projectile) src.getSource();
 
-			if (src.getSource() instanceof Player) {
-				reason = MDDeathReason.PLAYER_ATTACK;
-			} else if (src.getSource() instanceof Projectile) {
-				Projectile projectile = (Projectile) src.getSource();
+			Optional<UUID> optionalUUID = projectile.getCreator();
 
-				Optional<UUID> optionalUUID = projectile.getCreator();
-
-				if (!optionalUUID.isPresent()) {
-					return;
-				}
-
-				Optional<Player> optionalPlayer = Sponge.getServer().getPlayer(optionalUUID.get());
-
-				if (optionalPlayer.isPresent()) {
-					reason = MDDeathReason.PLAYER_ATTACK;
-				} else {
-					reason = MDDeathReason.MOB_ATTACK;
-				}
-			} else {
-				DamageType cause = src.getType();
-
-				if (cause.equals(DamageTypes.ATTACK) || cause.equals(DamageTypes.PROJECTILE)) {
-					reason = MDDeathReason.MOB_ATTACK;
-				} else if (cause.equals(DamageTypes.EXPLOSIVE)) {
-					reason = MDDeathReason.BLOCK_EXPLOSION;
-				} else if (cause.equals(DamageTypes.CONTACT)) {
-					reason = MDDeathReason.BLOCK_CONTACT;
-				} else if (cause.equals(DamageTypes.DROWN)) {
-					reason = MDDeathReason.DROWNING;
-				} else if (cause.equals(DamageTypes.FALL)) {
-					reason = MDDeathReason.FALLING;
-				} else if (cause.equals(DamageTypes.FIRE)) {
-					reason = MDDeathReason.FIRE;
-				} else if (cause.equals(DamageTypes.SUFFOCATE)) {
-					reason = MDDeathReason.SUFFOCATION;
-				} else if (cause.equals(DamageTypes.GENERIC)) {
-					reason = MDDeathReason.SUICIDE;
-				}
+			if (!optionalUUID.isPresent()) {
+				return;
 			}
 
-			PlayerDropData drops = settings.getPlayerDrops();
+			Optional<Player> optionalPlayer = Sponge.getServer().getPlayer(optionalUUID.get());
 
-			BigDecimal balance = economy.getOrCreateAccount(player.getUniqueId()).get().getBalance(economy.getDefaultCurrency());
-			dropAmount = drops.getDropAmount(reason, balance.doubleValue());
+			if (optionalPlayer.isPresent()) {
+				reason = MDDeathReason.PLAYER;
+			} else {
+				reason = MDDeathReason.PROJECTILE;
+			}
+		} else {
+			DamageType cause = src.getType();
+			reason = MDDeathReason.valueOf(cause.getName().toUpperCase());
 		}
 
-		PlayerMoneyDropEvent playerWalletDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), specialdrop, Cause.of(NamedCause.source(player)));
+		PlayerDropData drops = settings.getPlayerDrops();
 
-		if (playerWalletDropEvent.getPlayerLossAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
-			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getPlayerLossAmount()));
+		BigDecimal balance = economy.getOrCreateAccount(player.getUniqueId()).get().getBalance(economy.getDefaultCurrency());
+		double dropAmount = drops.getDropAmount(reason, balance.doubleValue());
+
+		PlayerMoneyDropEvent playerWalletDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(player)));
+
+		if (playerWalletDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
+			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getDropAmount()));
 
 			for (MoneyStack moneyStack : playerWalletDropEvent.getMoneyStacks()) {
 				moneyStack.drop(playerWalletDropEvent.getLocation());
 			}
 
-			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerWalletDropEvent.getPlayerLossAmount());
+			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerWalletDropEvent.getDropAmount());
 		}
 	}
 
+	@Listener
+	public void onRespawnPlayerEvent(RespawnPlayerEvent event) {
+		
+	}
 	@Listener
 	public void onSpawnEntityEvent(SpawnEntityEvent event, @First SpawnCause cause) {
 		Settings settings = Settings.get(event.getTargetWorld());
@@ -301,13 +283,13 @@ public class EventListener {
 		}
 	}
 
-	private double getSpecialDrop(Living entity) {
+	private boolean isValidDrop(Living entity) {
 		Optional<MoneyData> optionalMoney = entity.get(MoneyData.class);
 
 		if (optionalMoney.isPresent()) {
-			return optionalMoney.get().amount().get();
-		} else {
-			return -1;
+			return true;
 		}
+		
+		return false;
 	}
 }

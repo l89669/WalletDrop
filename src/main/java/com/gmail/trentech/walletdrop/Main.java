@@ -50,7 +50,7 @@ public class Main {
 	@Listener
 	public void onPostInitializationEvent(GamePostInitializationEvent event) {
 		if (!setupEconomy()) {
-			getLog().error("No economy plugin found. Disabling MoneyDrop...");
+			getLog().error("No economy plugin found. Aborting initialization.");
 			return;
 		}
 

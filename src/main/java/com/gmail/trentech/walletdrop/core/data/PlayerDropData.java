@@ -2,8 +2,8 @@ package com.gmail.trentech.walletdrop.core.data;
 
 public class PlayerDropData {
 
-	private double[] amount = new double[10];
-	private boolean[] percent = new boolean[10];
+	private double[] amount = new double[16];
+	private boolean[] percent = new boolean[16];
 	private double precision;
 
 	public PlayerDropData(double precision) {
@@ -78,17 +78,23 @@ public class PlayerDropData {
 	}
 
 	public enum MDDeathReason {
-		MOB_ATTACK(0, "mob-attack"), 
-		PLAYER_ATTACK(1, "player-attack"), 
-		BLOCK_EXPLOSION(2, "block-explosion"), 
-		BLOCK_CONTACT(3, "block-contact"), 
-		DROWNING(4, "drowning"), 
-		FALLING(5, "falling"), 
+		ATTACK(0, "attack"),
+		PLAYER(1, "player"), 
+		EXPLOSIVE(2, "explosive"), 
+		CONTACT(3, "contact"), 
+		DROWN(4, "drown"), 
+		FALL(5, "fall"), 
 		FIRE(6, "fire"), 
-		SUFFOCATION(7, "suffocation"), 
-		SUICIDE(8, "suicide"), 
-		OTHER(9, "other");
-
+		MAGMA(7, "magma"),
+		SUFFOCATE(8, "suffocate"), 
+		HUNGER(9, "hunger"), 
+		MAGIC(10, "magic"), 
+		VOID(11, "void"), 
+		PROJECTILE(12, "projectile"), 
+		GENERIC(13, "generic"),
+		SWEEPING_ATTACK(14, "sweeping_attack"),
+		CUSTOM(15, "custom");
+		
 		private int index;
 		private String name;
 

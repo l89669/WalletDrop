@@ -88,6 +88,7 @@ public class WalletDrop {
 	public static void sendDeathChatMessage(Settings settings, Player player, double amount) {
 		if (settings.isDeathChatNotification()) {
 			double money;
+			
 			if (amount % 1 == 0) {
 				money = amount;
 			} else {
@@ -95,7 +96,7 @@ public class WalletDrop {
 			}
 			
 			String deathmessage = settings.getDeathChatMessage().replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(settings.getChatType(), TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
+			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
 		}
 	}
 
