@@ -24,7 +24,6 @@ import org.spongepowered.api.event.cause.entity.spawn.SpawnCause;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.event.entity.DestructEntityEvent;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
-import org.spongepowered.api.event.entity.living.humanoid.player.RespawnPlayerEvent;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.item.inventory.ChangeInventoryEvent;
 import org.spongepowered.api.event.world.LoadWorldEvent;
@@ -256,10 +255,6 @@ public class EventListener {
 		}
 	}
 
-	@Listener
-	public void onRespawnPlayerEvent(RespawnPlayerEvent event) {
-		
-	}
 	@Listener
 	public void onSpawnEntityEvent(SpawnEntityEvent event, @First SpawnCause cause) {
 		Settings settings = Settings.get(event.getTargetWorld());
