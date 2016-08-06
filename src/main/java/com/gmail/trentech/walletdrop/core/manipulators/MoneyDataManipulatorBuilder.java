@@ -7,12 +7,17 @@ import java.util.Optional;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.manipulator.DataManipulatorBuilder;
+import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.InvalidDataException;
 
-public class MoneyDataManipulatorBuilder implements DataManipulatorBuilder<MoneyData, ImmutableMoneyData> {
+public class MoneyDataManipulatorBuilder extends AbstractDataBuilder<MoneyData> implements DataManipulatorBuilder<MoneyData, ImmutableMoneyData> {
 
+	public MoneyDataManipulatorBuilder() {
+		super(MoneyData.class, 1);
+	}
+	
 	@Override
-	public Optional<MoneyData> build(DataView container) throws InvalidDataException {
+	protected Optional<MoneyData> buildContent(DataView container) throws InvalidDataException {
 		if (!container.contains(AMOUNT.getQuery())) {
 			return Optional.empty();
 		}
