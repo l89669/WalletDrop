@@ -1,11 +1,11 @@
 package com.gmail.trentech.walletdrop.api.events;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -13,9 +13,9 @@ import org.spongepowered.api.world.World;
 import com.gmail.trentech.walletdrop.api.MoneyStack;
 
 /*
- * Triggered when Entity dies and drops money
+ * Triggered when Entity, that is not instanceof Player, dies and drops money
  */
-public class MoneyDropEvent extends AbstractEvent implements Cancellable {
+public class WalletDropEvent extends AbstractEvent implements Cancellable {
 
 	protected Living entity;
 	protected Location<World> dropLocation;
@@ -24,16 +24,11 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 	protected Cause cause;
 	protected boolean cancelled = false;
 
-	public MoneyDropEvent(List<MoneyStack> moneyStacks, Cause cause) {
-		Optional<Living> optionalLiving = cause.first(Living.class);
-		
-		if(optionalLiving.isPresent()) {
-			entity = optionalLiving.get();
-			dropLocation = entity.getLocation();
-		}
-		
+	public WalletDropEvent(List<MoneyStack> moneyStacks, Living entity) {
+		this.entity = entity;
+		this.dropLocation = entity.getLocation();
 		this.moneyStacks = moneyStacks;
-		this.cause = cause;
+		this.cause = Cause.of(NamedCause.source(entity));
 	}
 
 	/*
@@ -45,8 +40,6 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 
 	/*
 	 * Gets the Entity that caused this event.
-	 * 
-	 * Can be null.
 	 */
 	public Living getEntity() {
 		return entity;
@@ -54,8 +47,6 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 
 	/*
 	 * Gets the location money will drop
-	 * 
-	 * Can be null;
 	 */
 	public Location<World> getLocation() {
 		return dropLocation;
@@ -82,5 +73,31 @@ public class MoneyDropEvent extends AbstractEvent implements Cancellable {
 	public Cause getCause() {
 		return cause;
 	}
+	
+	public static class Player extends WalletDropEvent {
 
+		protected double dropAmount;
+
+		public Player(List<MoneyStack> moneyStacks, org.spongepowered.api.entity.living.player.Player player) {
+			super(moneyStacks, player);
+			
+			for (int i = 0; i < moneyStacks.size(); i++) {
+				this.dropAmount += moneyStacks.get(i).getValue();
+			}
+		}
+
+		/*
+		 *  Gets the amount of money the player will drop
+		 */
+		public double getDropAmount() {
+			return dropAmount;
+		}
+
+		/*
+		 * Set the amount of money the player will lose
+		 */
+		public void setDropAmount(double dropAmount) {
+			this.dropAmount = dropAmount;
+		}
+	}
 }

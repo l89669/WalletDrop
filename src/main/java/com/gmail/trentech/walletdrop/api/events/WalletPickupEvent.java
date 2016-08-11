@@ -8,14 +8,14 @@ import org.spongepowered.api.item.inventory.ItemStack;
 /*
  * Triggered when Player picks up money
  */
-public class MoneyPickupEvent extends AbstractEvent implements Cancellable {
+public class WalletPickupEvent extends AbstractEvent implements Cancellable {
 
 	protected ItemStack item;
 	protected double value;
 	protected Cause cause;
 	protected boolean cancelled = false;
 
-	public MoneyPickupEvent(ItemStack sourceItem, double value, Cause cause) {
+	public WalletPickupEvent(ItemStack sourceItem, double value, Cause cause) {
 		this.item = sourceItem;
 		this.value = value;
 		this.cause = cause;

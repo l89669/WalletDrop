@@ -35,9 +35,8 @@ import org.spongepowered.api.service.economy.EconomyService;
 import com.gmail.trentech.walletdrop.Main;
 import com.gmail.trentech.walletdrop.api.MoneyStack;
 import com.gmail.trentech.walletdrop.api.WalletDrop;
-import com.gmail.trentech.walletdrop.api.events.MoneyDropEvent;
-import com.gmail.trentech.walletdrop.api.events.MoneyPickupEvent;
-import com.gmail.trentech.walletdrop.api.events.PlayerMoneyDropEvent;
+import com.gmail.trentech.walletdrop.api.events.WalletDropEvent;
+import com.gmail.trentech.walletdrop.api.events.WalletPickupEvent;
 import com.gmail.trentech.walletdrop.core.data.MobDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
@@ -107,7 +106,7 @@ public class EventListener {
 				}
 			}
 
-			MoneyPickupEvent moneyPickupEvent = new MoneyPickupEvent(itemStack, amount, Cause.of(NamedCause.source(player)));
+			WalletPickupEvent moneyPickupEvent = new WalletPickupEvent(itemStack, amount, Cause.of(NamedCause.source(player)));
 
 			if (!Sponge.getEventManager().post(moneyPickupEvent)) {
 				Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute(c -> {
@@ -191,12 +190,13 @@ public class EventListener {
 			dropAmount = ((long) (drops.getMin() * 1000 + (extra - (extra % (settings.getPrecision() * 1000))))) / 1000.0;
 		}
 
-		MoneyDropEvent moneyDropEvent = new MoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(entity)));
+		WalletDropEvent walletDropEvent = new WalletDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), entity);
 
-		if (!Sponge.getEventManager().post(moneyDropEvent)) {
+		if (!Sponge.getEventManager().post(walletDropEvent)) {
 			settings.getDropsPerSecond().add();
-			for (MoneyStack moneyStack : moneyDropEvent.getMoneyStacks()) {
-				moneyStack.drop(moneyDropEvent.getLocation());
+			
+			for (MoneyStack moneyStack : walletDropEvent.getMoneyStacks()) {
+				moneyStack.drop(walletDropEvent.getLocation());
 			}
 		}
 	}
@@ -242,16 +242,16 @@ public class EventListener {
 		BigDecimal balance = economy.getOrCreateAccount(player.getUniqueId()).get().getBalance(economy.getDefaultCurrency());
 		double dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 
-		PlayerMoneyDropEvent playerMoneyDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(player)));
+		WalletDropEvent.Player playerWalletDropEvent = new WalletDropEvent.Player(WalletDrop.createMoneyStacks(settings, dropAmount), player);
 
-		if (playerMoneyDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerMoneyDropEvent))) {
-			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getDropAmount()));
-			
-			for (MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
-				moneyStack.drop(playerMoneyDropEvent.getLocation());
+		if (playerWalletDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
+			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getDropAmount()));
+
+			for (MoneyStack moneyStack : playerWalletDropEvent.getMoneyStacks()) {
+				moneyStack.drop(playerWalletDropEvent.getLocation());
 			}
 
-			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getDropAmount());
+			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerWalletDropEvent.getDropAmount());
 		}
 	}
 
