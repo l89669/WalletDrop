@@ -107,16 +107,16 @@ public class EventListener {
 				}
 			}
 
-			MoneyPickupEvent mpEvent = new MoneyPickupEvent(itemStack, amount, Cause.of(NamedCause.source(player)));
+			MoneyPickupEvent moneyPickupEvent = new MoneyPickupEvent(itemStack, amount, Cause.of(NamedCause.source(player)));
 
-			if (!Sponge.getEventManager().post(mpEvent)) {
+			if (!Sponge.getEventManager().post(moneyPickupEvent)) {
 				Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute(c -> {
 					player.getInventory().query(itemStack).clear();
 				}).submit(Main.getInstance().getPlugin());			
 				
-				WalletDrop.giveOrTakeMoney(player, new BigDecimal(mpEvent.getValue()));
-				
-				WalletDrop.sendPickupChatMessage(Settings.get(player.getWorld()), player, amount);
+				WalletDrop.giveOrTakeMoney(player, new BigDecimal(moneyPickupEvent.getValue()));
+
+				WalletDrop.sendPickupChatMessage(player, amount);
 			}
 		}
 	}
@@ -242,16 +242,16 @@ public class EventListener {
 		BigDecimal balance = economy.getOrCreateAccount(player.getUniqueId()).get().getBalance(economy.getDefaultCurrency());
 		double dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 
-		PlayerMoneyDropEvent playerWalletDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(player)));
+		PlayerMoneyDropEvent playerMoneyDropEvent = new PlayerMoneyDropEvent(WalletDrop.createMoneyStacks(settings, dropAmount), Cause.of(NamedCause.source(player)));
 
-		if (playerWalletDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
-			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getDropAmount()));
-
-			for (MoneyStack moneyStack : playerWalletDropEvent.getMoneyStacks()) {
-				moneyStack.drop(playerWalletDropEvent.getLocation());
+		if (playerMoneyDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerMoneyDropEvent))) {
+			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerMoneyDropEvent.getDropAmount()));
+			
+			for (MoneyStack moneyStack : playerMoneyDropEvent.getMoneyStacks()) {
+				moneyStack.drop(playerMoneyDropEvent.getLocation());
 			}
 
-			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerWalletDropEvent.getDropAmount());
+			WalletDrop.sendDeathChatMessage(Settings.get(player.getWorld()), player, playerMoneyDropEvent.getDropAmount());
 		}
 	}
 

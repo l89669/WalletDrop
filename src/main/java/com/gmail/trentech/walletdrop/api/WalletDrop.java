@@ -21,14 +21,14 @@ import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
 import com.gmail.trentech.walletdrop.core.utils.Settings;
 
 public class WalletDrop {
-	
+
 	public static List<MoneyStack> createMoneyStacks(Settings settings, double amount) {
 		List<MoneyStack> moneyStacks = new ArrayList<>();
 
 		double split = settings.getMaxStackValue();
 
 		ItemStack itemStack = ItemStack.builder().quantity(1).itemType(settings.getItemType()).build();
-		
+
 		int unsafeDamage = settings.getItemUnsafeDamage();
 		
 		if(unsafeDamage > 0) {
@@ -99,20 +99,8 @@ public class WalletDrop {
 			player.sendMessage(TextSerializers.FORMATTING_CODE.deserialize(deathmessage));
 		}
 	}
-
-	public static void sendPickupChatMessage(Settings settings, Player player, double amount) {
-		if (settings.isPickupChatNotification()) {
-			String message = settings.getPickupChatMessage();
-			
-			double money;
-			if (amount % 1 == 0) {
-				money = amount;
-			} else {
-				money = (amount * 1000) / 1000.0;
-			}
-
-			message = message.replaceAll("<money>", new DecimalFormat("#,###,##0.00").format(money));
-			player.sendMessage(settings.getChatType(), TextSerializers.FORMATTING_CODE.deserialize(message));
-		}
+	
+	public static void sendPickupChatMessage(Player player, double amount) {
+		Main.getInstance().getNotificationManager().addNotification(player, amount);
 	}
 }

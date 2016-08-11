@@ -119,6 +119,9 @@ public class ConfigManager {
 			if (config.getNode("4:notifications", "1:pickup", "message").isVirtual()) {
 				config.getNode("4:notifications", "1:pickup", "message").setValue("&aYou picked up &e$<money>");
 			}
+			if (config.getNode("4:notifications", "1:pickup", "delay").isVirtual()) {
+				config.getNode("4:notifications", "1:pickup", "delay").setValue(false);
+			}
 			if (config.getNode("4:notifications", "2:death", "enable").isVirtual()) {
 				config.getNode("4:notifications", "2:death").setComment("Send player notification message when dies and loses money");
 				config.getNode("4:notifications", "2:death", "enable").setValue(true);
@@ -127,7 +130,7 @@ public class ConfigManager {
 				config.getNode("4:notifications", "2:death", "message").setValue("&cYou wake up, your wallet missing &e$<money>");
 			}
 			if (config.getNode("5:settings", "use-permissions").isVirtual()) {
-				config.getNode("5:settings", "use-permissions").setValue(false).setComment("If true, players will require moneydrop.enable to collect money");
+				config.getNode("5:settings", "use-permissions").setValue(false).setComment("If true, players will require walletdrop.enable to collect money");
 			}
 			if (config.getNode("5:settings", "allow-creative-mode").isVirtual()) {
 				config.getNode("5:settings", "allow-creative-mode").setValue(true).setComment("If true, players will be allowed to collect money from mobs in creative mode");
@@ -226,6 +229,9 @@ public class ConfigManager {
 			if (config.getNode("4:notifications", "1:pickup", "message").isVirtual()) {
 				config.getNode("4:notifications", "1:pickup", "message").setValue(global.getNode("4:notifications", "1:pickup", "message").getString());
 			}
+			if (config.getNode("4:notifications", "1:pickup", "delay").isVirtual()) {
+				config.getNode("4:notifications", "1:pickup", "delay").setValue(global.getNode("4:notifications", "1:pickup", "delay").getBoolean());
+			}
 			if (config.getNode("4:notifications", "2:death", "enable").isVirtual()) {
 				config.getNode("4:notifications", "2:death").setComment("Send player notification message when dies and loses money");
 				config.getNode("4:notifications", "2:death", "enable").setValue(global.getNode("4:notifications", "2:death", "enable").getBoolean());
@@ -234,7 +240,7 @@ public class ConfigManager {
 				config.getNode("4:notifications", "2:death", "message").setValue(global.getNode("4:notifications", "2:death", "message").getString());
 			}
 			if (config.getNode("5:settings", "use-permissions").isVirtual()) {
-				config.getNode("5:settings", "use-permissions").setValue(global.getNode("5:settings", "use-permissions").getBoolean()).setComment("If true, players will require moneydrop.enable to collect money");
+				config.getNode("5:settings", "use-permissions").setValue(global.getNode("5:settings", "use-permissions").getBoolean()).setComment("If true, players will require walletdrop.enable to collect money");
 			}
 			if (config.getNode("5:settings", "allow-creative-mode").isVirtual()) {
 				config.getNode("5:settings", "allow-creative-mode").setValue(global.getNode("5:settings", "allow-creative-mode").getBoolean()).setComment("If true, players will be allowed to collect money from mobs in creative mode");

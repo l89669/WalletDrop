@@ -20,7 +20,7 @@ import org.spongepowered.api.text.chat.ChatTypes;
 import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.walletdrop.Main;
-import com.gmail.trentech.walletdrop.core.data.DropsPerSecond;
+import com.gmail.trentech.walletdrop.core.consumers.DropsPerSecond;
 import com.gmail.trentech.walletdrop.core.data.MobDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
@@ -177,6 +177,10 @@ public class Settings {
 		return configManager.getConfig().getNode("4:notifications", "1:pickup", "message").getString();
 	}
 
+	public boolean isNotificationDelay() {
+		return configManager.getConfig().getNode("4:notifications", "1:pickup", "delay").getBoolean();
+	}
+	
 	public boolean isDeathChatNotification() {
 		return configManager.getConfig().getNode("4:notifications", "2:death", "enable").getBoolean();
 	}

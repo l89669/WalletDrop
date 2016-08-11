@@ -1,4 +1,4 @@
-package com.gmail.trentech.walletdrop.core.data;
+package com.gmail.trentech.walletdrop.core.consumers;
 
 import java.util.function.Consumer;
 

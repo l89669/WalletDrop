@@ -20,6 +20,7 @@ import com.gmail.trentech.walletdrop.core.manipulators.ImmutableMoneyData;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyData;
 import com.gmail.trentech.walletdrop.core.manipulators.MoneyDataManipulatorBuilder;
 import com.gmail.trentech.walletdrop.core.utils.ConfigManager;
+import com.gmail.trentech.walletdrop.core.utils.NotificationManager;
 import com.gmail.trentech.walletdrop.core.utils.Resource;
 import com.gmail.trentech.walletdrop.core.utils.Settings;
 
@@ -32,12 +33,14 @@ public class Main {
 	private Logger log;
 	private PluginContainer plugin;
 	private EconomyService economy;
+	private NotificationManager notificationManager;
 	
 	private static Main instance;
 	
 	@Listener
 	public void onPreInitializationEvent(GamePreInitializationEvent event) {
 		instance = this;
+		notificationManager = new NotificationManager();
 		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
 		log = getPlugin().getLogger();
 	}
@@ -85,6 +88,10 @@ public class Main {
 	
 	public EconomyService getEconomy() {
 		return economy;
+	}
+
+	public NotificationManager getNotificationManager() {
+		return notificationManager;
 	}
 
 	public Logger getLog() {
