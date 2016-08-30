@@ -1,7 +1,9 @@
 package com.gmail.trentech.walletdrop.core.utils;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.type.Profession;
@@ -10,7 +12,6 @@ import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.item.ItemTypes;
-import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.walletdrop.Main;
 import com.gmail.trentech.walletdrop.core.data.PlayerDropData.MDDeathReason;
@@ -22,52 +23,44 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 
 public class ConfigManager {
 
-	private File file;
+	private Path path;
 	private CommentedConfigurationNode config;
 	private ConfigurationLoader<CommentedConfigurationNode> loader;
-
-	private ConfigManager() {
-		String folder = "config" + File.separator + Resource.ID;
-		if (!new File(folder).isDirectory()) {
-			new File(folder).mkdirs();
-		}
-		file = new File(folder, "global.conf");
-
-		create();
-		load();
-	}
+	
+	private static ConcurrentHashMap<String, ConfigManager> configManagers = new ConcurrentHashMap<>();
 
 	private ConfigManager(String configName) {
-		String folder = "config" + File.separator + Resource.ID;
-
-		if (!new File(folder).isDirectory()) {
-			new File(folder).mkdirs();
+		try {
+			path = Main.instance().getPath().resolve(configName + ".conf");
+			
+			if (!Files.exists(path)) {		
+				Files.createFile(path);
+				Main.instance().getLog().info("Creating new " + path.getFileName() + " file...");
+			}		
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		file = new File(folder, configName + ".conf");
 
-		create();
 		load();
 	}
-
-	public static ConfigManager get(World world) {
-		return new ConfigManager(world.getName());
+	
+	public static ConfigManager get(String configName) {
+		return configManagers.get(configName);
 	}
-
+	
 	public static ConfigManager get() {
-		return new ConfigManager();
+		return configManagers.get("config");
 	}
 
-	public ConfigurationLoader<CommentedConfigurationNode> getLoader() {
-		return loader;
+	public static ConfigManager init() {
+		return init("config");
 	}
-
-	public CommentedConfigurationNode getConfig() {
-		return config;
-	}
-
-	public void init() {
-		if (file.getName().equalsIgnoreCase("global.conf")) {
-
+	
+	public static ConfigManager init(String configName) {
+		ConfigManager configManager = new ConfigManager(configName);
+		CommentedConfigurationNode config = configManager.getConfig();
+		
+		if (configName.equalsIgnoreCase("config")) {
 			if (config.getNode("1:drops", "1:item", "id").isVirtual()) {
 				config.getNode("1:drops", "1:item", "id").setValue(ItemTypes.GOLD_NUGGET.getId()).setComment("Item id or ItemStack used to represent money");
 			}
@@ -143,39 +136,39 @@ public class ConfigManager {
 						String skeleton = entityType.getId();
 
 						for (SkeletonType type : Sponge.getRegistry().getAllOf(SkeletonType.class)) {
-							initMobData(skeleton + "-" + type.getId().toLowerCase());
+							configManager.initMobData(skeleton + "-" + type.getId().toLowerCase());
 						}
 						break;
 					case "minecraft:zombie":
-						initMobData(entityType.getId());
-						initMobData(entityType.getId() + "-villager");
-						initMobData(entityType.getId() + "-child");
-						initMobData(entityType.getId() + "-villager-child");
+						configManager.initMobData(entityType.getId());
+						configManager.initMobData(entityType.getId() + "-villager");
+						configManager.initMobData(entityType.getId() + "-child");
+						configManager.initMobData(entityType.getId() + "-villager-child");
 						break;
 					case "minecraft:creeper":
-						initMobData(entityType.getId());
-						initMobData(entityType.getId() + "-charged");
+						configManager.initMobData(entityType.getId());
+						configManager.initMobData(entityType.getId() + "-charged");
 						break;
 					case "minecraft:villager":
 						String villager = entityType.getId();
-						initMobData(villager);
+						configManager.initMobData(villager);
 
 						for (Profession type : Sponge.getRegistry().getAllOf(Profession.class)) {
-							initMobData(villager + "-" + type.getId());
+							configManager.initMobData(villager + "-" + type.getId());
 						}
 						break;
 					case "minecraft:entityhorse":
-						initMobData(entityType.getId());
-						initMobData(entityType.getId());
+						configManager.initMobData(entityType.getId());
+						configManager.initMobData(entityType.getId());
 						break;
 					default:
-						initMobData(entityType.getId());
+						configManager.initMobData(entityType.getId());
 						break;
 					}
 				}
 			}
 		} else {
-			ConfigurationNode global = new ConfigManager().getConfig();
+			ConfigurationNode global = ConfigManager.get().getConfig();
 
 			if (config.getNode("1:drops", "1:item", "id").isVirtual()) {
 				config.getNode("1:drops", "1:item", "id").setValue(global.getNode("1:drops", "1:item", "id").getString()).setComment("Item id or ItemStack used to represent money");
@@ -253,41 +246,73 @@ public class ConfigManager {
 						String skeleton = entityType.getId();
 
 						for (SkeletonType type : Sponge.getRegistry().getAllOf(SkeletonType.class)) {
-							initMobData(global, skeleton + "-" + type.getId().toLowerCase());
+							configManager.initMobData(global, skeleton + "-" + type.getId().toLowerCase());
 						}
 						break;
 					case "minecraft:zombie":
-						initMobData(global, entityType.getId());
-						initMobData(global, entityType.getId() + "-villager");
-						initMobData(global, entityType.getId() + "-child");
-						initMobData(global, entityType.getId() + "-villager-child");
+						configManager.initMobData(global, entityType.getId());
+						configManager.initMobData(global, entityType.getId() + "-villager");
+						configManager.initMobData(global, entityType.getId() + "-child");
+						configManager.initMobData(global, entityType.getId() + "-villager-child");
 						break;
 					case "minecraft:creeper":
-						initMobData(global, entityType.getId());
-						initMobData(global, entityType.getId() + "-charged");
+						configManager.initMobData(global, entityType.getId());
+						configManager.initMobData(global, entityType.getId() + "-charged");
 						break;
 					case "minecraft:villager":
 						String villager = entityType.getId();
-						initMobData(global, villager);
+						configManager.initMobData(global, villager);
 
 						for (Profession type : Sponge.getRegistry().getAllOf(Profession.class)) {
-							initMobData(global, villager + "-" + type.getId());
+							configManager.initMobData(global, villager + "-" + type.getId());
 						}
 						break;
 					case "minecraft:entityhorse":
-						initMobData(global, entityType.getId());
-						initMobData(global, entityType.getId());
+						configManager.initMobData(global, entityType.getId());
+						configManager.initMobData(global, entityType.getId());
 						break;
 					default:
-						initMobData(global, entityType.getId());
+						configManager.initMobData(global, entityType.getId());
 						break;
 					}
 				}
 			}
 		}
-		save();
+		configManager.save();
+		
+		configManagers.put(configName, configManager);
+		
+		return configManager;
+	}
+	
+	public ConfigurationLoader<CommentedConfigurationNode> getLoader() {
+		return loader;
 	}
 
+	public CommentedConfigurationNode getConfig() {
+		return config;
+	}
+
+	private void load() {
+		loader = HoconConfigurationLoader.builder().setPath(path).build();
+		
+		try {
+			config = loader.load();
+		} catch (IOException e) {
+			Main.instance().getLog().error("Failed to load config");
+			e.printStackTrace();
+		}
+	}
+
+	public void save() {
+		try {
+			loader.save(config);
+		} catch (IOException e) {
+			Main.instance().getLog().error("Failed to save config");
+			e.printStackTrace();
+		}
+	}
+	
 	private void initMobData(String entity) {
 		if (config.getNode("6:mobs", entity, "dropped-minimum").isVirtual()) {
 			config.getNode("6:mobs", entity, "dropped-minimum").setValue(1.0).setComment("Minimum amount of money mob will drop");
@@ -309,37 +334,6 @@ public class ConfigManager {
 		}
 		if (config.getNode("6:mobs", entity, "dropped-frequency").isVirtual()) {
 			config.getNode("6:mobs", entity, "dropped-frequency").setValue(global.getNode("6:mobs", entity, "dropped-frequency").getDouble()).setComment("Percentage mob will drop money. 0.0 to 1.0");
-		}
-	}
-
-	private void create() {
-		if (!file.exists()) {
-			try {
-				Main.getInstance().getLog().info("Creating new " + file.getName() + " file...");
-				file.createNewFile();
-			} catch (IOException e) {
-				Main.getInstance().getLog().error("Failed to create new config file");
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void load() {
-		loader = HoconConfigurationLoader.builder().setFile(file).build();
-		try {
-			config = loader.load();
-		} catch (IOException e) {
-			Main.getInstance().getLog().error("Failed to load config");
-			e.printStackTrace();
-		}
-	}
-
-	public void save() {
-		try {
-			loader.save(config);
-		} catch (IOException e) {
-			Main.getInstance().getLog().error("Failed to save config");
-			e.printStackTrace();
 		}
 	}
 }

@@ -1,9 +1,12 @@
 package com.gmail.trentech.walletdrop;
 
-import java.util.Optional;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
@@ -12,7 +15,6 @@ import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
-import org.spongepowered.api.service.economy.EconomyService;
 import org.spongepowered.api.world.World;
 
 import com.gmail.trentech.walletdrop.core.EventListener;
@@ -23,6 +25,7 @@ import com.gmail.trentech.walletdrop.core.utils.ConfigManager;
 import com.gmail.trentech.walletdrop.core.utils.NotificationManager;
 import com.gmail.trentech.walletdrop.core.utils.Resource;
 import com.gmail.trentech.walletdrop.core.utils.Settings;
+import com.google.inject.Inject;
 
 import me.flibio.updatifier.Updatifier;
 
@@ -30,9 +33,14 @@ import me.flibio.updatifier.Updatifier;
 @Plugin(id = Resource.ID, name = Resource.NAME, version = Resource.VERSION, description = Resource.DESCRIPTION, authors = Resource.AUTHOR, url = Resource.URL, dependencies = { @Dependency(id = "Updatifier", optional = true) })
 public class Main {
 
-	private Logger log;
+	@Inject @ConfigDir(sharedRoot = false)
+    private Path path;
+
+	@Inject 
 	private PluginContainer plugin;
-	private EconomyService economy;
+	
+	@Inject
+	private Logger log;
 	private NotificationManager notificationManager;
 	
 	private static Main instance;
@@ -41,8 +49,12 @@ public class Main {
 	public void onPreInitializationEvent(GamePreInitializationEvent event) {
 		instance = this;
 		notificationManager = new NotificationManager();
-		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
-		log = getPlugin().getLogger();
+		
+		try {			
+			Files.createDirectories(path);		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Listener
@@ -52,19 +64,14 @@ public class Main {
 
 	@Listener
 	public void onPostInitializationEvent(GamePostInitializationEvent event) {
-		if (!setupEconomy()) {
-			getLog().error("No economy plugin found. Aborting initialization.");
-			return;
-		}
-
-		ConfigManager.get().init();
+		ConfigManager.init();
 
 		Sponge.getEventManager().registerListeners(this, new EventListener());
 	}
 
 	@Listener
 	public void onReloadEvent(GameReloadEvent event) {
-		ConfigManager.get().init();
+		ConfigManager.init();
 
 		for (World world : Sponge.getServer().getWorlds()) {
 			Settings.close(world);
@@ -72,23 +79,9 @@ public class Main {
 		}
 	}
 
-	private boolean setupEconomy() {
-		Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
-
-		if (optionalEconomy.isPresent()) {
-			economy = optionalEconomy.get();
-		}
-
-		return optionalEconomy.isPresent();
-	}
-
-	public static Main getInstance() {
+	public static Main instance() {
         return instance;
     }
-	
-	public EconomyService getEconomy() {
-		return economy;
-	}
 
 	public NotificationManager getNotificationManager() {
 		return notificationManager;
@@ -100,5 +93,9 @@ public class Main {
 
 	public PluginContainer getPlugin() {
 		return plugin;
+	}
+
+	public Path getPath() {
+		return path;
 	}
 }

@@ -30,16 +30,14 @@ import ninja.leaping.configurate.ConfigurationNode;
 public class Settings {
 
 	private String worldName;
-	private ConfigManager configManager;
 	private static ConcurrentHashMap<String, DropsPerSecond> dps = new ConcurrentHashMap<>();
 	
 	private Settings(World world) {
-		this.configManager = ConfigManager.get(world);
 		this.worldName = world.getName();
 	}
 
 	private Settings() {
-		this.configManager = ConfigManager.get();
+
 	}
 
 	public static Settings get(World world) {
@@ -55,15 +53,16 @@ public class Settings {
 	}
 	
 	public static void init(World world) {
-		ConfigManager configManager = ConfigManager.get(world);
-		configManager.init();
+		String worldName = world.getName();
+		
+		ConfigManager.init(worldName);
 		
 		Settings settings = get(world);
 		
 		DropsPerSecond dps = new DropsPerSecond(0);
 		dps.setDroplimit(settings.getDropLimit());
 
-		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.getInstance().getPlugin());
+		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.instance().getPlugin());
 		
 		Settings.dps.put(world.getName(), dps);
 	}
@@ -73,32 +72,32 @@ public class Settings {
 	}
 	
 	public boolean isKillOnlyDrops() {
-		return configManager.getConfig().getNode("1:drops", "only-on-kill").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("1:drops", "only-on-kill").getBoolean();
 	}
 
 	public double getMaxStackValue() {
-		return configManager.getConfig().getNode("1:drops", "max-value").getDouble();
+		return ConfigManager.get(worldName).getConfig().getNode("1:drops", "max-value").getDouble();
 	}
 	
 	public int getDropLimit() {
-		return configManager.getConfig().getNode("1:drops", "max-per-second").getInt();
+		return ConfigManager.get(worldName).getConfig().getNode("1:drops", "max-per-second").getInt();
 	}
 	
 	public double getPrecision() {
-		return configManager.getConfig().getNode("1:drops", "precision").getDouble();
+		return ConfigManager.get(worldName).getConfig().getNode("1:drops", "precision").getDouble();
 	}
 	
 	public boolean isHopperAllowed() {
-		return !configManager.getConfig().getNode("1:drops", "hoppers-destroy").getBoolean();
+		return !ConfigManager.get(worldName).getConfig().getNode("1:drops", "hoppers-destroy").getBoolean();
 	}
 	
 	public ItemType getItemType() {
-		String itemType = configManager.getConfig().getNode("1:drops", "1:item", "id").getString();
+		String itemType = ConfigManager.get(worldName).getConfig().getNode("1:drops", "1:item", "id").getString();
 
 		Optional<ItemType> optionalType = Sponge.getRegistry().getType(ItemType.class, itemType);
 
 		if (!optionalType.isPresent()) {
-			Main.getInstance().getLog().error(itemType + " is an not valid");
+			Main.instance().getLog().error(itemType + " is an not valid");
 			return null;
 		} else {
 			return optionalType.get();
@@ -106,31 +105,31 @@ public class Settings {
 	}
 	
 	public int getItemUnsafeDamage() {
-		return configManager.getConfig().getNode("1:drops", "1:item", "unsafe-damage").getInt();
+		return ConfigManager.get(worldName).getConfig().getNode("1:drops", "1:item", "unsafe-damage").getInt();
 	}
 	
 	public boolean isVanillaSpawnerAllowed() {
-		return configManager.getConfig().getNode("2:spawners", "vanilla").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("2:spawners", "vanilla").getBoolean();
 	}
 
 	public boolean isModSpawnerAllowed() {
-		return configManager.getConfig().getNode("2:spawners", "mods").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("2:spawners", "mods").getBoolean();
 	}
 
 	public boolean isPluginSpawnerAllowed() {
-		return configManager.getConfig().getNode("2:spawners", "plugins").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("2:spawners", "plugins").getBoolean();
 	}
 	
 	public boolean isEggSpawnerAllowed() {
-		return configManager.getConfig().getNode("2:spawners", "egg").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("2:spawners", "egg").getBoolean();
 	}
 	
 	public PlayerDropData getPlayerDrops() {
 		PlayerDropData playerdrops = new PlayerDropData(getPrecision());
 
 		for (MDDeathReason deathReason : MDDeathReason.values()) {
-			if (!playerdrops.setDeathAmount(configManager.getConfig().getNode("3:players", deathReason.getName()).getString(), deathReason)) {
-				Main.getInstance().getLog().error("Invalid amount at 3:players, " + deathReason.getName() + " Reverting to 0.");
+			if (!playerdrops.setDeathAmount(ConfigManager.get(worldName).getConfig().getNode("3:players", deathReason.getName()).getString(), deathReason)) {
+				Main.instance().getLog().error("Invalid amount at 3:players, " + deathReason.getName() + " Reverting to 0.");
 			}
 		}
 
@@ -170,32 +169,32 @@ public class Settings {
 	}
 	
 	public boolean isPickupChatNotification() {
-		return configManager.getConfig().getNode("4:notifications", "1:pickup", "enable").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("4:notifications", "1:pickup", "enable").getBoolean();
 	}
 
 	public String getPickupChatMessage() {
-		return configManager.getConfig().getNode("4:notifications", "1:pickup", "message").getString();
+		return ConfigManager.get(worldName).getConfig().getNode("4:notifications", "1:pickup", "message").getString();
 	}
 
 	public boolean isNotificationDelay() {
-		return configManager.getConfig().getNode("4:notifications", "1:pickup", "delay").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("4:notifications", "1:pickup", "delay").getBoolean();
 	}
 	
 	public boolean isDeathChatNotification() {
-		return configManager.getConfig().getNode("4:notifications", "2:death", "enable").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("4:notifications", "2:death", "enable").getBoolean();
 	}
 
 	public String getDeathChatMessage() {
-		return configManager.getConfig().getNode("4:notifications", "2:death", "message").getString();
+		return ConfigManager.get(worldName).getConfig().getNode("4:notifications", "2:death", "message").getString();
 	}
 	
 	public ChatType getChatType() {
-		String chatType = configManager.getConfig().getNode("4:notifications", "location").getString();
+		String chatType = ConfigManager.get(worldName).getConfig().getNode("4:notifications", "location").getString();
 		
 		Optional<NotificationType> optionalType = NotificationType.get(chatType);
 
 		if (!optionalType.isPresent()) {
-			Main.getInstance().getLog().error(chatType + " is an not valid");
+			Main.instance().getLog().error(chatType + " is an not valid");
 			return null;
 		} else {
 			return optionalType.get().getChatType();
@@ -203,15 +202,15 @@ public class Settings {
 	}
 	
 	public boolean isCreativeModeAllowed() {
-		return configManager.getConfig().getNode("5:settings", "allow-creative-mode").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("5:settings", "allow-creative-mode").getBoolean();
 	}
 
 	public boolean isUsePermissions() {
-		return configManager.getConfig().getNode("5:settings", "use-permissions").getBoolean();
+		return ConfigManager.get(worldName).getConfig().getNode("5:settings", "use-permissions").getBoolean();
 	}
 	
 	private MobDropData getMobData(String entity) {
-		ConfigurationNode node = configManager.getConfig().getNode("6:mobs");
+		ConfigurationNode node = ConfigManager.get(worldName).getConfig().getNode("6:mobs");
 
 		double min = node.getNode(entity, "dropped-minimum").getDouble();
 		double max = node.getNode(entity, "dropped-maximum").getDouble();

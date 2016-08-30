@@ -67,20 +67,18 @@ public class WalletDrop {
 		return 0;
 	}
 	
-	public static void giveOrTakeMoney(Player player, BigDecimal amount) {
-		EconomyService economy = Main.getInstance().getEconomy();
-
+	public static void depositOrWithdraw(Player player, EconomyService economy, BigDecimal amount) {
 		UniqueAccount account = economy.getOrCreateAccount(player.getUniqueId()).get();
 
 		if (amount.compareTo(BigDecimal.ZERO) > 0) {
-			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
+			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.instance().getPlugin())));
 		} else if (amount.compareTo(BigDecimal.ZERO) < 0) {
 
 			BigDecimal pocket = account.getBalance(economy.getDefaultCurrency());
 			if (pocket.add(amount).compareTo(BigDecimal.ZERO) < 0) {
-				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.instance().getPlugin())));
 			} else {
-				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getInstance().getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.instance().getPlugin())));
 			}
 		}
 	}
@@ -101,6 +99,6 @@ public class WalletDrop {
 	}
 	
 	public static void sendPickupChatMessage(Player player, double amount) {
-		Main.getInstance().getNotificationManager().addNotification(player, amount);
+		Main.instance().getNotificationManager().addNotification(player, amount);
 	}
 }

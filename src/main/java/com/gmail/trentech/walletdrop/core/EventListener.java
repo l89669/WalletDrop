@@ -111,9 +111,17 @@ public class EventListener {
 			if (!Sponge.getEventManager().post(moneyPickupEvent)) {
 				Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute(c -> {
 					player.getInventory().query(itemStack).clear();
-				}).submit(Main.getInstance().getPlugin());			
+				}).submit(Main.instance().getPlugin());			
 				
-				WalletDrop.giveOrTakeMoney(player, new BigDecimal(moneyPickupEvent.getValue()));
+				Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
+				
+				if(!optionalEconomy.isPresent()) {
+					Main.instance().getLog().error("Economy plugin not found");
+					return;
+				}		
+				EconomyService economy = optionalEconomy.get();
+				
+				WalletDrop.depositOrWithdraw(player, economy, new BigDecimal(moneyPickupEvent.getValue()));
 
 				WalletDrop.sendPickupChatMessage(player, amount);
 			}
@@ -210,8 +218,6 @@ public class EventListener {
 
 		Settings settings = Settings.get(player.getWorld());
 
-		EconomyService economy = Main.getInstance().getEconomy();
-
 		MDDeathReason reason = MDDeathReason.GENERIC;
 
 		if (src.getSource() instanceof Player) {
@@ -239,13 +245,21 @@ public class EventListener {
 
 		PlayerDropData drops = settings.getPlayerDrops();
 
+		Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
+		
+		if(!optionalEconomy.isPresent()) {
+			Main.instance().getLog().error("Economy plugin not found");
+			return;
+		}		
+		EconomyService economy = optionalEconomy.get();
+
 		BigDecimal balance = economy.getOrCreateAccount(player.getUniqueId()).get().getBalance(economy.getDefaultCurrency());
 		double dropAmount = drops.getDropAmount(reason, balance.doubleValue());
 
 		WalletDropEvent.Player playerWalletDropEvent = new WalletDropEvent.Player(WalletDrop.createMoneyStacks(settings, dropAmount), player);
 
 		if (playerWalletDropEvent.getDropAmount() != 0 && (!Sponge.getEventManager().post(playerWalletDropEvent))) {
-			WalletDrop.giveOrTakeMoney(player, new BigDecimal(-1 * playerWalletDropEvent.getDropAmount()));
+			WalletDrop.depositOrWithdraw(player, economy, new BigDecimal(-1 * playerWalletDropEvent.getDropAmount()));
 
 			for (MoneyStack moneyStack : playerWalletDropEvent.getMoneyStacks()) {
 				moneyStack.drop(playerWalletDropEvent.getLocation());

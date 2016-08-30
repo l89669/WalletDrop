@@ -58,7 +58,7 @@ public class Notification implements Consumer<Task> {
 			}
 		}
 
-		Main.getInstance().getNotificationManager().unregisterNotification(uuid);
+		Main.instance().getNotificationManager().unregisterNotification(uuid);
 	}
 
 	@Override
