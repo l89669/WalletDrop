@@ -36,17 +36,16 @@ public class Main {
 	@Inject @ConfigDir(sharedRoot = false)
     private Path path;
 
-	@Inject 
-	private PluginContainer plugin;
-	
 	@Inject
 	private Logger log;
 	private NotificationManager notificationManager;
 	
+	private static PluginContainer plugin;
 	private static Main instance;
 	
 	@Listener
 	public void onPreInitializationEvent(GamePreInitializationEvent event) {
+		plugin = Sponge.getPluginManager().getPlugin(Resource.ID).get();
 		instance = this;
 		notificationManager = new NotificationManager();
 		
@@ -64,24 +63,20 @@ public class Main {
 
 	@Listener
 	public void onPostInitializationEvent(GamePostInitializationEvent event) {
-		ConfigManager.init();
+		ConfigManager.init("global");
 
 		Sponge.getEventManager().registerListeners(this, new EventListener());
 	}
 
 	@Listener
 	public void onReloadEvent(GameReloadEvent event) {
-		ConfigManager.init();
+		ConfigManager.init("global");
 
 		for (World world : Sponge.getServer().getWorlds()) {
 			Settings.close(world);
 			Settings.init(world);
 		}
 	}
-
-	public static Main instance() {
-        return instance;
-    }
 
 	public NotificationManager getNotificationManager() {
 		return notificationManager;
@@ -91,11 +86,15 @@ public class Main {
 		return log;
 	}
 
-	public PluginContainer getPlugin() {
-		return plugin;
-	}
-
 	public Path getPath() {
 		return path;
+	}
+	
+	public static Main instance() {
+        return instance;
+    }
+
+	public static PluginContainer getPlugin() {
+		return plugin;
 	}
 }

@@ -62,7 +62,7 @@ public class Settings {
 		DropsPerSecond dps = new DropsPerSecond(0);
 		dps.setDroplimit(settings.getDropLimit());
 
-		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.instance().getPlugin());
+		Sponge.getGame().getScheduler().createTaskBuilder().intervalTicks(20).execute(dps).submit(Main.getPlugin());
 		
 		Settings.dps.put(world.getName(), dps);
 	}

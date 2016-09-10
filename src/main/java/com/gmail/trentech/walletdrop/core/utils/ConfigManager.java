@@ -60,7 +60,7 @@ public class ConfigManager {
 		ConfigManager configManager = new ConfigManager(configName);
 		CommentedConfigurationNode config = configManager.getConfig();
 		
-		if (configName.equalsIgnoreCase("config")) {
+		if (configName.equalsIgnoreCase("global")) {
 			if (config.getNode("1:drops", "1:item", "id").isVirtual()) {
 				config.getNode("1:drops", "1:item", "id").setValue(ItemTypes.GOLD_NUGGET.getId()).setComment("Item id or ItemStack used to represent money");
 			}
@@ -168,7 +168,7 @@ public class ConfigManager {
 				}
 			}
 		} else {
-			ConfigurationNode global = ConfigManager.get().getConfig();
+			ConfigurationNode global = ConfigManager.get("global").getConfig();
 
 			if (config.getNode("1:drops", "1:item", "id").isVirtual()) {
 				config.getNode("1:drops", "1:item", "id").setValue(global.getNode("1:drops", "1:item", "id").getString()).setComment("Item id or ItemStack used to represent money");

@@ -27,7 +27,7 @@ public class NotificationManager {
 				notification.addAmount(amount);
 			} else {
 				Notification notification = new Notification(amount, uuid);
-				Task.builder().delayTicks(30).execute(notification).submit(Main.instance().getPlugin());
+				Task.builder().delayTicks(30).execute(notification).submit(Main.getPlugin());
 
 				notifications.put(uuid, notification);
 			}

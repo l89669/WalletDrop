@@ -111,7 +111,7 @@ public class EventListener {
 			if (!Sponge.getEventManager().post(moneyPickupEvent)) {
 				Sponge.getScheduler().createTaskBuilder().delayTicks(2).execute(c -> {
 					player.getInventory().query(itemStack).clear();
-				}).submit(Main.instance().getPlugin());			
+				}).submit(Main.getPlugin());			
 				
 				Optional<EconomyService> optionalEconomy = Sponge.getServiceManager().provide(EconomyService.class);
 				

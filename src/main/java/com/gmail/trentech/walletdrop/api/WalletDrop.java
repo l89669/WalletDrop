@@ -71,14 +71,14 @@ public class WalletDrop {
 		UniqueAccount account = economy.getOrCreateAccount(player.getUniqueId()).get();
 
 		if (amount.compareTo(BigDecimal.ZERO) > 0) {
-			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.instance().getPlugin())));
+			account.deposit(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
 		} else if (amount.compareTo(BigDecimal.ZERO) < 0) {
 
 			BigDecimal pocket = account.getBalance(economy.getDefaultCurrency());
 			if (pocket.add(amount).compareTo(BigDecimal.ZERO) < 0) {
-				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.instance().getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), pocket, Cause.of(NamedCause.source(Main.getPlugin())));
 			} else {
-				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.instance().getPlugin())));
+				account.withdraw(economy.getDefaultCurrency(), amount, Cause.of(NamedCause.source(Main.getPlugin())));
 			}
 		}
 	}
