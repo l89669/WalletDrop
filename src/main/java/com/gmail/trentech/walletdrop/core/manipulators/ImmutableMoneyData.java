@@ -30,11 +30,6 @@ public class ImmutableMoneyData extends AbstractImmutableSingleData<Double, Immu
 	}
 
 	@Override
-	public int compareTo(ImmutableMoneyData arg0) {
-		return 0;
-	}
-
-	@Override
 	public int getContentVersion() {
 		return 1;
 	}

@@ -53,11 +53,6 @@ public class MoneyData extends AbstractSingleData<Double, MoneyData, ImmutableMo
 	}
 
 	@Override
-	public int compareTo(MoneyData arg0) {
-		return 0;
-	}
-
-	@Override
 	protected Value<Double> getValueGetter() {
 		return Sponge.getRegistry().getValueFactory().createValue(AMOUNT, getValue());
 	}
