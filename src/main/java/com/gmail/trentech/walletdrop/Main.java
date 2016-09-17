@@ -63,20 +63,22 @@ public class Main {
 
 	@Listener
 	public void onPostInitializationEvent(GamePostInitializationEvent event) {
-		ConfigManager.init("global");
+		ConfigManager.init();
 
 		Sponge.getEventManager().registerListeners(this, new EventListener());
 	}
 
 	@Listener
 	public void onReloadEvent(GameReloadEvent event) {
-		ConfigManager.init("global");
+		ConfigManager.init();
 
 		for (World world : Sponge.getServer().getWorlds()) {
 			Settings.close(world);
 			Settings.init(world);
 		}
 	}
+
+
 
 	public NotificationManager getNotificationManager() {
 		return notificationManager;
@@ -90,11 +92,11 @@ public class Main {
 		return path;
 	}
 	
-	public static Main instance() {
-        return instance;
-    }
-
 	public static PluginContainer getPlugin() {
 		return plugin;
 	}
+	
+	public static Main instance() {
+        return instance;
+    }
 }
